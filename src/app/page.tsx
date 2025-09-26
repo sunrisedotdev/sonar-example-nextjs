@@ -1,10 +1,10 @@
 "use client";
 
 import { ConnectKitButton } from "connectkit";
-import { EntityDetails } from "@echoxyz/sonar-core";
+import { APIError, EntityDetails } from "@echoxyz/sonar-core";
 import { useSonarAuth, useSonarClient } from "@echoxyz/sonar-react";
 import { useCallback, useEffect, useState } from "react";
-import { sonarConfig } from "./config";
+import { sonarConfig, sonarHomeURL } from "./config";
 import { useAccount } from "wagmi";
 import SonarEntity from "./SonarEntity";
 
@@ -38,7 +38,7 @@ const SonarAuthButton = ({
 export type ResourceState<T> = {
   hasFetched: boolean;
   loading: boolean;
-  error?: string;
+  error?: Error;
   value?: T;
 };
 
@@ -93,7 +93,7 @@ const SonarEntityPanel = () => {
       setEntity({
         hasFetched: true,
         loading: false,
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: error instanceof Error ? error : new Error(String(error)),
       });
     }
   }, [ready, authenticated, client, address, isConnected]);
@@ -130,7 +130,21 @@ const SonarEntityPanel = () => {
   }
 
   if (entity.error) {
-    return <p>Error: {entity.error}</p>;
+    if (entity.error instanceof APIError && entity.error.status === 404) {
+      return (
+        <p>
+          No entity found for this user and wallet. Please link your wallet on{" "}
+          <a
+            className="font-bold underline underline-offset-4 cursor-pointer"
+            href={sonarHomeURL.href}
+          >
+            Sonar
+          </a>{" "}
+          to continue.
+        </p>
+      );
+    }
+    return <p>Error: {entity.error.message}</p>;
   }
 
   return <SonarEntity key={entity.value?.EntityUUID} value={entity.value} />;
