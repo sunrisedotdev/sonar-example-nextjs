@@ -2,10 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useSonarAuth } from "@echoxyz/sonar-react";
-import { useRouter } from "next/navigation";
 
 export default function OAuthCallback() {
-    const router = useRouter();
     const { authenticated, completeOAuth, ready } = useSonarAuth();
     const oauthCompletionTriggered = useRef(false);
     const [oauthError, setOAuthError] = useState<string | null>(null);
@@ -44,8 +42,8 @@ export default function OAuthCallback() {
         if (!ready || !authenticated) {
             return;
         }
-        router.push("/");
-    }, [authenticated, router, ready]);
+        window.location.href = "/";
+    }, [authenticated, ready]);
 
     // set a timeout, so we don't keep the user waiting indefinitely in case of an unexpected issue
     useEffect(() => {
@@ -60,7 +58,7 @@ export default function OAuthCallback() {
                 <div className="text-center">
                     <h2 className="text-xl font-semibold text-red-600 mb-2">Timed out</h2>
                     <button
-                        onClick={() => router.push("/")}
+                        onClick={() => window.location.href = "/"}
                         className="mt-4 px-4 py-2 bg-gray-50 text-gray-900 rounded-xl cursor-pointer"
                     >
                         Return to Login
@@ -76,7 +74,7 @@ export default function OAuthCallback() {
                 <div className="text-center">
                     <h2 className="text-xl font-semibold text-red-600 mb-2">{oauthError}</h2>
                     <button
-                        onClick={() => router.push("/")}
+                        onClick={() => window.location.href = "/"}
                         className="mt-4 px-4 py-2 bg-gray-50 text-gray-900 rounded-xl cursor-pointer"
                     >
                         Return to Login
