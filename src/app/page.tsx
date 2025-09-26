@@ -54,8 +54,8 @@ export default function Home() {
         <ConnectKitButton />
         <SonarAuthButton
           authenticated={authenticated}
-          login={() => login()}
-          logout={() => logout()}
+          login={login}
+          logout={logout}
         />
       </div>
       <SonarEntityPanel />
