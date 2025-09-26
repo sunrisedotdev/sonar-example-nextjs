@@ -1,10 +1,10 @@
 import {
-  SaleEligibility,
+  EntityDetails,
   EntitySetupState,
   EntityType,
-  EntityDetails,
+  SaleEligibility,
 } from "@echoxyz/sonar-core";
-import { sonarConfig } from "./config";
+import { sonarHomeURL } from "./config";
 
 function EntityStateDescription({ entity }: { entity?: EntityDetails }) {
   if (!entity) {
@@ -106,10 +106,7 @@ export default function SonarEntity({
     if (!entity) {
       return;
     }
-    window.open(
-      new URL(`/sonar/${sonarConfig.saleUUID}`, sonarConfig.frontendURL).href,
-      "_blank"
-    );
+    window.open(sonarHomeURL.href, "_blank");
   };
 
   return (
