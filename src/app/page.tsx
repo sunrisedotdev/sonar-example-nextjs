@@ -1,7 +1,6 @@
 "use client";
 
 import { ConnectKitButton } from "connectkit";
-import { APIError } from "@echoxyz/sonar-core";
 import { useSonarAuth } from "@echoxyz/sonar-react";
 import { useSonarEntity } from "./hooks/useSonarEntity";
 import { sonarConfig, sonarHomeURL } from "./config";
@@ -71,21 +70,22 @@ const SonarEntityPanel = () => {
   }
 
   if (error) {
-    if (error instanceof APIError && error.status === 404) {
-      return (
-        <p>
-          No entity found for this user and wallet. Please link your wallet on{" "}
-          <a
-            className="font-bold underline underline-offset-4 cursor-pointer"
-            href={sonarHomeURL.href}
-          >
-            Sonar
-          </a>{" "}
-          to continue.
-        </p>
-      );
-    }
     return <p>Error: {error.message}</p>;
+  }
+
+  if (!entity) {
+    return (
+      <p>
+        No entity found for this wallet. Please link your wallet on{" "}
+        <a
+          className="font-bold underline underline-offset-4 cursor-pointer"
+          href={sonarHomeURL.href}
+        >
+          Sonar
+        </a>{" "}
+        to continue.
+      </p>
+    );
   }
 
   return <SonarEntity key={entity?.EntityUUID} value={entity} />;

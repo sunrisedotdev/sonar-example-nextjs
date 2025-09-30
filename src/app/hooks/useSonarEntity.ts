@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { EntityDetails } from "@echoxyz/sonar-core";
+import { APIError, EntityDetails } from "@echoxyz/sonar-core";
 import { useSonarAuth, useSonarClient } from "@echoxyz/sonar-react";
 
 export type WalletConnection = {
@@ -59,6 +59,16 @@ export function useSonarEntity(args: {
         hasFetched: true,
       });
     } catch (err) {
+      if (err instanceof APIError && err.status === 404) {
+        // Return undefined entity if it doesn't exist
+        setState({
+          loading: false,
+          entity: undefined,
+          error: undefined,
+          hasFetched: true,
+        });
+        return;
+      }
       const error = err instanceof Error ? err : new Error(String(err));
       setState({ loading: false, entity: undefined, error, hasFetched: true });
     }
