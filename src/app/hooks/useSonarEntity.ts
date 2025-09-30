@@ -2,20 +2,13 @@ import { useCallback, useEffect, useState } from "react";
 import { EntityDetails } from "@echoxyz/sonar-core";
 import { useSonarAuth, useSonarClient } from "@echoxyz/sonar-react";
 
-export enum ConnectionState {
-  Unknown = "unknown",
-  WalletDisconnected = "wallet-disconnected",
-  SonarDisconnected = "sonar-disconnected",
-  AllConnected = "all-connected",
-}
-
 export type WalletConnection = {
   address?: string;
   isConnected: boolean;
 };
 
 export type UseSonarEntityResult = {
-  state: ConnectionState;
+  authenticated: boolean;
   loading: boolean;
   entity?: EntityDetails;
   error?: Error;
@@ -38,7 +31,7 @@ export function useSonarEntity(args: {
 
   const [state, setState] = useState<{
     loading: boolean;
-    value?: EntityDetails;
+    entity?: EntityDetails;
     error?: Error;
     hasFetched: boolean;
   }>({
@@ -61,13 +54,13 @@ export function useSonarEntity(args: {
       });
       setState({
         loading: false,
-        value: resp.Entity,
+        entity: resp.Entity,
         error: undefined,
         hasFetched: true,
       });
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
-      setState({ loading: false, value: undefined, error, hasFetched: true });
+      setState({ loading: false, entity: undefined, error, hasFetched: true });
     }
   }, [client, saleUUID, activeWallet, fullyConnected]);
 
@@ -75,7 +68,7 @@ export function useSonarEntity(args: {
     setState({
       loading: false,
       hasFetched: false,
-      value: undefined,
+      entity: undefined,
       error: undefined,
     });
   }, []);
@@ -94,25 +87,10 @@ export function useSonarEntity(args: {
     }
   }, [ready, authenticated, walletConnected, activeWallet, reset]);
 
-  const connectionState: ConnectionState = (() => {
-    if (!walletConnected) {
-      return ConnectionState.WalletDisconnected;
-    }
-    if (!authenticated) {
-      return ConnectionState.SonarDisconnected;
-    }
-    if (fullyConnected) {
-      return ConnectionState.AllConnected;
-    }
-    return ConnectionState.Unknown;
-  })();
-
   return {
-    state: connectionState,
-    loading:
-      state.loading ||
-      (connectionState === "all-connected" && !state.hasFetched),
-    entity: state.value,
+    authenticated,
+    loading: state.loading,
+    entity: state.entity,
     error: state.error,
   };
 }

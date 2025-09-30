@@ -3,9 +3,10 @@
 import { ConnectKitButton } from "connectkit";
 import { APIError } from "@echoxyz/sonar-core";
 import { useSonarAuth } from "@echoxyz/sonar-react";
-import { ConnectionState, useSonarWagmi } from "./hooks/useSonarWagmi";
+import { useSonarEntity } from "./hooks/useSonarEntity";
 import { sonarConfig, sonarHomeURL } from "./config";
 import SonarEntity from "./SonarEntity";
+import { useAccount } from "wagmi";
 
 const SonarAuthButton = ({
   authenticated,
@@ -55,18 +56,13 @@ export default function Home() {
 }
 
 const SonarEntityPanel = () => {
-  const { state, loading, entity, error } = useSonarWagmi({
+  const { address: walletAddress, isConnected } = useAccount();
+  const { authenticated, loading, entity, error } = useSonarEntity({
     saleUUID: sonarConfig.saleUUID,
+    wallet: { address: walletAddress, isConnected },
   });
 
-  if (state === ConnectionState.Unknown) {
-    return <p>Unknown state</p>;
-  }
-
-  if (
-    state === ConnectionState.WalletDisconnected ||
-    state === ConnectionState.SonarDisconnected
-  ) {
+  if (!isConnected || !authenticated) {
     return <p>Connect your wallet and Sonar account to continue</p>;
   }
 
