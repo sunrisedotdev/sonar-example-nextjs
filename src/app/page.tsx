@@ -1,12 +1,10 @@
 "use client";
 
 import { ConnectKitButton } from "connectkit";
-import { APIError, EntityDetails } from "@echoxyz/sonar-core";
-import { useSonarAuth, useSonarClient } from "@echoxyz/sonar-react";
-import { useCallback, useEffect, useState } from "react";
+import { useSonarAuth, useSonarEntity } from "@echoxyz/sonar-react";
 import { sonarConfig, sonarHomeURL } from "./config";
-import { useAccount } from "wagmi";
 import SonarEntity from "./SonarEntity";
+import { useAccount } from "wagmi";
 
 const SonarAuthButton = ({
   authenticated,
@@ -23,9 +21,9 @@ const SonarAuthButton = ({
       onClick={() => {
         if (authenticated) {
           logout();
-        } else {
-          login();
+          return;
         }
+        login();
       }}
     >
       <p className="text-gray-900">
@@ -35,15 +33,7 @@ const SonarAuthButton = ({
   );
 };
 
-export type ResourceState<T> = {
-  hasFetched: boolean;
-  loading: boolean;
-  error?: Error;
-  value?: T;
-};
-
-// TODO:
-// support purchase flow, including liveness checks
+// TODO: support purchase flow, including liveness checks
 
 export default function Home() {
   const { login, authenticated, logout } = useSonarAuth();
@@ -64,88 +54,38 @@ export default function Home() {
 }
 
 const SonarEntityPanel = () => {
-  const client = useSonarClient();
-  const { authenticated, ready } = useSonarAuth();
-  const { address, isConnected } = useAccount();
-
-  const [entity, setEntity] = useState<ResourceState<EntityDetails>>({
-    hasFetched: false,
-    loading: false,
-    value: undefined,
+  const { address: walletAddress, isConnected } = useAccount();
+  const { authenticated, loading, entity, error } = useSonarEntity({
+    saleUUID: sonarConfig.saleUUID,
+    wallet: { address: walletAddress, isConnected },
   });
 
-  const readEntity = useCallback(async () => {
-    if (!ready || !authenticated || !address || !isConnected) {
-      return;
-    }
-
-    try {
-      const entity = await client.readEntity({
-        saleUUID: sonarConfig.saleUUID,
-        walletAddress: address,
-      });
-      setEntity({
-        hasFetched: true,
-        loading: false,
-        value: entity.Entity,
-      });
-    } catch (error) {
-      setEntity({
-        hasFetched: true,
-        loading: false,
-        error: error instanceof Error ? error : new Error(String(error)),
-      });
-    }
-  }, [ready, authenticated, client, address, isConnected]);
-
-  // Read entity on mount
-  useEffect(() => {
-    readEntity();
-  }, [readEntity]);
-
-  // Reset entity state if a user is not authenticated or doesn't have a connected wallet
-  useEffect(() => {
-    if (ready && (!authenticated || !address || !isConnected)) {
-      setEntity({
-        hasFetched: false,
-        loading: false,
-        value: undefined,
-        error: undefined,
-      });
-    }
-  }, [ready, authenticated, address, isConnected]);
-
-  // Coordinate the state of both the wallet and Sonar account being connected.
-  const fullyConnected = ready && authenticated && isConnected;
-  const hasTriedLoading =
-    !entity.loading &&
-    (entity.value !== undefined || entity.error !== undefined);
-
-  if (!fullyConnected) {
+  if (!isConnected || !authenticated) {
     return <p>Connect your wallet and Sonar account to continue</p>;
   }
 
-  if (!ready || entity.loading || !hasTriedLoading) {
+  if (loading) {
     return <p>Loading...</p>;
   }
 
-  if (entity.error) {
-    if (entity.error instanceof APIError && entity.error.status === 404) {
-      return (
-        <p>
-          No entity found for this user and wallet. Please link your wallet on{" "}
-          <a
-            className="font-bold underline underline-offset-4 cursor-pointer"
-            href={sonarHomeURL.href}
-          >
-            Sonar
-          </a>{" "}
-          to continue.
-        </p>
-      );
-    }
-    return <p>Error: {entity.error.message}</p>;
+  if (error) {
+    return <p>Error: {error.message}</p>;
   }
 
-  return <SonarEntity key={entity.value?.EntityUUID} value={entity.value} />;
+  if (!entity) {
+    return (
+      <p>
+        No entity found for this wallet. Please link your wallet on{" "}
+        <a
+          className="font-bold underline underline-offset-4 cursor-pointer"
+          href={sonarHomeURL.href}
+        >
+          Sonar
+        </a>{" "}
+        to continue.
+      </p>
+    );
+  }
+
+  return <SonarEntity key={entity?.EntityUUID} value={entity} />;
 };
