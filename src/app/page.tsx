@@ -5,6 +5,7 @@ import { useSonarAuth, useSonarEntity } from "@echoxyz/sonar-react";
 import { sonarConfig, sonarHomeURL } from "./config";
 import SonarEntity from "./SonarEntity";
 import { useAccount } from "wagmi";
+import PurchasePanel from "./PurchasePanel";
 
 const SonarAuthButton = ({
   authenticated,
@@ -33,8 +34,6 @@ const SonarAuthButton = ({
   );
 };
 
-// TODO: support purchase flow, including liveness checks
-
 export default function Home() {
   const { login, authenticated, logout } = useSonarAuth();
 
@@ -49,15 +48,16 @@ export default function Home() {
         />
       </div>
       <SonarEntityPanel />
+      <PurchasePanel />
     </div>
   );
 }
 
 const SonarEntityPanel = () => {
-  const { address: walletAddress, isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
   const { authenticated, loading, entity, error } = useSonarEntity({
     saleUUID: sonarConfig.saleUUID,
-    wallet: { address: walletAddress, isConnected },
+    wallet: { address, isConnected },
   });
 
   if (!isConnected || !authenticated) {
