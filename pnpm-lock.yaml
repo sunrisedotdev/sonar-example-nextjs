@@ -15,8 +15,8 @@ importers:
         specifier: ^0.2.0
         version: 0.2.0
       '@echoxyz/sonar-react':
-        specifier: ^0.2.1
-        version: 0.2.1(react@18.3.1)
+        specifier: ^0.3.0
+        version: 0.3.0(react@18.3.1)
       '@tanstack/react-query':
         specifier: ^5.90.2
         version: 5.90.2(react@18.3.1)
@@ -69,9 +69,6 @@ importers:
       tsup:
         specifier: ^8.0.0
         version: 8.5.0(jiti@2.6.0)(postcss@8.5.6)(typescript@5.9.2)
-      typescript:
-        specifier: ^5.9.2
-        version: 5.9.2
       vitest:
         specifier: ^2.0.0
         version: 2.1.9(@types/node@20.19.17)(jsdom@27.0.0(bufferutil@4.0.9)(postcss@8.5.6)(utf-8-validate@5.0.10))(lightningcss@1.30.1)
@@ -256,8 +253,8 @@ packages:
   '@echoxyz/sonar-core@0.2.0':
     resolution: {integrity: sha512-YZdQb1k2YMzAFFfUO0nVlJGUqASOcyINql7c9mEFzp0sFx/Cho1n/qT72xMX4aStf6PalIClc/XIx9/pwEzA1A==}
 
-  '@echoxyz/sonar-react@0.2.1':
-    resolution: {integrity: sha512-Bm7vB307dlUeCadM2qO/4L7FucuI3XHBvcdNqQold95wDcshj6kq4sB1VW26JeAeewNiFr14cWxsFQC00l2Siw==}
+  '@echoxyz/sonar-react@0.3.0':
+    resolution: {integrity: sha512-y/4tssvS8EBc+imd4tCLfnKYnKqKuUF74Jg78hgdSVGjUBL1owrN4VqN14wOqxopvHZseNBQ3GrMIjvDneQisg==}
     peerDependencies:
       react: '>=18'
 
@@ -4568,7 +4565,7 @@ snapshots:
 
   '@echoxyz/sonar-core@0.2.0': {}
 
-  '@echoxyz/sonar-react@0.2.1(react@18.3.1)':
+  '@echoxyz/sonar-react@0.3.0(react@18.3.1)':
     dependencies:
       '@echoxyz/sonar-core': 0.2.0
       react: 18.3.1
