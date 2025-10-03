@@ -1,19 +1,16 @@
 export const sonarConfig = {
-  saleUUID:
-    process.env.REACT_APP_SALE_UUID ?? "510f2069-69e3-4cb1-bed1-2ad49513ee80",
-  clientUUID:
-    process.env.REACT_APP_OAUTH_CLIENT_UUID ??
-    "da4e8c0c-f514-438a-adab-d7bb0ed4fc85",
-  redirectURI:
-    (process.env.REACT_APP_FRONTEND_URL ?? "http://localhost:3001") +
-    "/oauth/callback",
-  // Optional:
-  apiURL: process.env.REACT_APP_ECHO_API_URL ?? "http://localhost:4000",
-  frontendURL: process.env.REACT_APP_FRONTEND_URL ?? "http://localhost:3000",
-  tokenStorageKey: "sonar:auth-token",
+    saleUUID: process.env.NEXT_PUBLIC_SALE_UUID ?? "c3e73992-d3d3-4c83-8709-d5864221da46",
+    clientUUID: process.env.NEXT_PUBLIC_OAUTH_CLIENT_UUID ?? "d4301660-d56f-4a1b-ba46-29c909b58dfe",
+    // Must match a redirect URI configured for your sale's oauth client on the Echo founder dashboard
+    redirectURI: process.env.NEXT_PUBLIC_OAUTH_CLIENT_REDIRECT_URI ?? "http://localhost:3000/oauth/callback",
+
+    // Optional:
+    apiURL: process.env.NEXT_PUBLIC_ECHO_API_URL, // The sonar API URL - unlikely you'll need to change this
+    frontendURL: process.env.NEXT_PUBLIC_FRONTEND_URL, // The sonar frontend URL - unlikely you'll need to change this
+    tokenStorageKey: "sonar:auth-token",
 };
 
 export const sonarHomeURL = new URL(
   `/sonar/${sonarConfig.saleUUID}/home`,
-  sonarConfig.frontendURL
+  sonarConfig.frontendURL ?? "https://app.echo.xyz"
 );

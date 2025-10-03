@@ -1,36 +1,24 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# sonar-example-nextjs
 
-## Getting Started
+Example Next.js app showing how to inetgrate with the Sonar API via the `sonar-react` and `sonar-core` libraries.
 
-First, run the development server:
+The key logic is implemented in the `src/app/page.tsx` file.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
+It demonstrates how to:
+
+- Setup providers in `src/app/Provider.tsx`
+- Authenticate with Sonar via the oauth flow
+  - See `AuthButton` on how to create the login/logout buttons
+  - See `src/app/oauth/callback/page.tsx` for an example of the oauth callback handler
+- Display setup/eligibily state of the entity on Sonar that is linked to the currently connected wallet
+  - See `src/app/SonarEntity.tsx` for an example of how to display the state of a user's entity
+
+## Running the app locally
+
+Set the required env vars listed in `src/app/config.ts` (or update that file).
+You can find the values for your sale on the [Echo founder dashboard](https://app.echo.xyz/founder).
+
+```sh
+pnpm i
 pnpm dev
-# or
-bun dev
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
