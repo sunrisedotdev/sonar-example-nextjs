@@ -112,7 +112,7 @@ function PurchasePanel({
   }
 
   if (!prePurchaseCheckResponse) {
-    return <p>Error: No pre purchase check result</p>;
+    return null;
   }
 
   return (
