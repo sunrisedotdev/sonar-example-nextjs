@@ -6,6 +6,7 @@ import { sonarConfig, sonarHomeURL } from "./config";
 import SonarEntity from "./SonarEntity";
 import { useAccount } from "wagmi";
 import PurchasePanel from "./PurchasePanel";
+import { EntityDetails } from "@echoxyz/sonar-core";
 
 const SonarAuthButton = ({
   authenticated,
@@ -35,7 +36,12 @@ const SonarAuthButton = ({
 };
 
 export default function Home() {
+  const { address, isConnected } = useAccount();
   const { login, authenticated, logout } = useSonarAuth();
+  const { loading, entity, error } = useSonarEntity({
+    saleUUID: sonarConfig.saleUUID,
+    wallet: { address, isConnected },
+  });
 
   return (
     <div className="flex flex-col gap-5 p-5 w-[500px] justify-center items-center">
@@ -47,19 +53,37 @@ export default function Home() {
           logout={logout}
         />
       </div>
-      <SonarEntityPanel />
-      <PurchasePanel />
+      <SonarEntityPanel
+        authenticated={authenticated}
+        loading={loading}
+        entity={entity}
+        error={error}
+        isConnected={isConnected}
+      />
+      {entity && (
+        <PurchasePanel
+          entityUUID={entity.EntityUUID}
+          entityType={entity.EntityType}
+          wallet={{ address, isConnected }}
+        />
+      )}
     </div>
   );
 }
 
-const SonarEntityPanel = () => {
-  const { address, isConnected } = useAccount();
-  const { authenticated, loading, entity, error } = useSonarEntity({
-    saleUUID: sonarConfig.saleUUID,
-    wallet: { address, isConnected },
-  });
-
+const SonarEntityPanel = ({
+  authenticated,
+  loading,
+  entity,
+  error,
+  isConnected,
+}: {
+  authenticated: boolean;
+  loading: boolean;
+  entity?: EntityDetails;
+  error?: Error;
+  isConnected: boolean;
+}) => {
   if (!isConnected || !authenticated) {
     return <p>Connect your wallet and Sonar account to continue</p>;
   }

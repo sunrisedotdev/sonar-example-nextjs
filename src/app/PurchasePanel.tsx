@@ -4,11 +4,12 @@ import {
   PrePurchaseFailureReason,
   PrePurchaseCheckResponse,
   AllocationPermit,
+  EntityType,
 } from "@echoxyz/sonar-core";
 import { useState } from "react";
 import { sonarConfig } from "./config";
-import { useAccount } from "wagmi";
 import { useSonarPurchase } from "./hooks";
+import { WalletConnection } from "@echoxyz/sonar-react";
 
 function PrePurchaseCheckState({
   prePurchaseCheckState,
@@ -56,8 +57,7 @@ function PrePurchaseCheckState({
   );
 }
 
-function PurchasePanel() {
-  const { address, isConnected } = useAccount();
+function PurchasePanel({ entityUUID, entityType, wallet }: { entityUUID: string, entityType: EntityType, wallet: WalletConnection }) {
   const {
     loading,
     prePurchaseCheckResult,
@@ -65,14 +65,16 @@ function PurchasePanel() {
     error,
   } = useSonarPurchase({
     saleUUID: sonarConfig.saleUUID,
-    wallet: { address, isConnected },
+    entityUUID,
+    entityType,
+    wallet,
   });
 
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   if (
-    !address ||
+    !wallet.address ||
     !prePurchaseCheckResult ||
     !generatePurchasePermit
   ) {
