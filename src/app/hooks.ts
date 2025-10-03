@@ -15,10 +15,11 @@ export type UseSonarPurchaseResult = {
 
 export function useSonarPurchase(args: {
   saleUUID: string;
-  entityUUID: string;
-  entityType: EntityType;
+  entityUUID?: string;
+  entityType?: EntityType;
   wallet: WalletConnection;
 }): UseSonarPurchaseResult {
+  const saleUUID = args.saleUUID;
   const entityUUID = args.entityUUID;
   const entityType = args.entityType;
   const wallet = args.wallet;
@@ -35,7 +36,7 @@ export function useSonarPurchase(args: {
 
   useEffect(() => {
     const prePurchaseCheck = async () => {
-      if (!wallet.address) {
+      if (!entityType || !entityUUID || !wallet.address) {
         return;
       }
 
@@ -47,9 +48,9 @@ export function useSonarPurchase(args: {
 
       try {
         const response = await client.prePurchaseCheck({
-          saleUUID: args.saleUUID,
-          entityType: args.entityType,
-          entityUUID: args.entityUUID,
+          saleUUID,
+          entityType,
+          entityUUID,
           walletAddress: wallet.address,
         });
         setPrePurchaseCheckState({
@@ -67,17 +68,18 @@ export function useSonarPurchase(args: {
     prePurchaseCheck();
   }, [wallet.address, entityUUID, entityType, client]);
 
-  const generatePurchasePermit = wallet.address
-    ? ((walletAddress: string) => {
-        return async () =>
-          await client.generatePurchasePermit({
-            saleUUID: args.saleUUID,
-            entityUUID: entityUUID,
-            entityType: entityType,
-            walletAddress: walletAddress,
-          });
-      })(wallet.address)
-    : undefined;
+  const generatePurchasePermit =
+    entityUUID && entityType && wallet.address
+      ? ((walletAddress: string) => {
+          return async () =>
+            await client.generatePurchasePermit({
+              saleUUID,
+              entityUUID,
+              entityType,
+              walletAddress: walletAddress,
+            });
+        })(wallet.address)
+      : undefined;
 
   return {
     loading: prePurchaseCheckState.loading,

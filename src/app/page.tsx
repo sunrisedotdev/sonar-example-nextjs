@@ -60,13 +60,11 @@ export default function Home() {
         error={error}
         isConnected={isConnected}
       />
-      {entity && (
-        <PurchasePanel
-          entityUUID={entity.EntityUUID}
-          entityType={entity.EntityType}
-          wallet={{ address, isConnected }}
-        />
-      )}
+      <PurchasePanel
+        entityUUID={entity?.EntityUUID}
+        entityType={entity?.EntityType}
+        wallet={{ address, isConnected }}
+      />
     </div>
   );
 }

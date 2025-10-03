@@ -57,27 +57,27 @@ function PrePurchaseCheckState({
   );
 }
 
-function PurchasePanel({ entityUUID, entityType, wallet }: { entityUUID: string, entityType: EntityType, wallet: WalletConnection }) {
-  const {
-    loading,
-    prePurchaseCheckResult,
-    generatePurchasePermit,
-    error,
-  } = useSonarPurchase({
-    saleUUID: sonarConfig.saleUUID,
-    entityUUID,
-    entityType,
-    wallet,
-  });
+function PurchasePanel({
+  entityUUID,
+  entityType,
+  wallet,
+}: {
+  entityUUID?: string;
+  entityType?: EntityType;
+  wallet: WalletConnection;
+}) {
+  const { loading, prePurchaseCheckResult, generatePurchasePermit, error } =
+    useSonarPurchase({
+      saleUUID: sonarConfig.saleUUID,
+      entityUUID,
+      entityType,
+      wallet,
+    });
 
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  if (
-    !wallet.address ||
-    !prePurchaseCheckResult ||
-    !generatePurchasePermit
-  ) {
+  if (!prePurchaseCheckResult || !generatePurchasePermit) {
     return null;
   }
 
@@ -118,9 +118,7 @@ function PurchasePanel({ entityUUID, entityType, wallet }: { entityUUID: string,
     <div className="flex flex-col gap-2 bg-gray-100 p-4 rounded-xl w-full items-center">
       <h1 className="text-lg font-bold text-gray-900 w-full">Purchase</h1>
 
-      <PrePurchaseCheckState
-        prePurchaseCheckState={prePurchaseCheckResult}
-      />
+      <PrePurchaseCheckState prePurchaseCheckState={prePurchaseCheckResult} />
 
       {prePurchaseCheckResult.ReadyToPurchase && (
         <button
@@ -136,10 +134,7 @@ function PurchasePanel({ entityUUID, entityType, wallet }: { entityUUID: string,
         <button
           className="cursor-pointer bg-gray-900 rounded-xl px-4 py-2 w-fit"
           onClick={() => {
-            window.open(
-              prePurchaseCheckResult.LivenessCheckURL,
-              "_blank"
-            );
+            window.open(prePurchaseCheckResult.LivenessCheckURL, "_blank");
           }}
         >
           <p className="text-gray-100">Complete liveness check to purchase</p>
