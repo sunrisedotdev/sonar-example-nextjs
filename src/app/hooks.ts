@@ -4,7 +4,7 @@ import {
   EntityType,
 } from "@echoxyz/sonar-core";
 import { WalletConnection, useSonarClient } from "@echoxyz/sonar-react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 export type UseSonarPurchaseResult = {
   loading: boolean;
@@ -35,6 +35,12 @@ export function useSonarPurchase(args: {
     loading: false,
     hasFetched: false,
   });
+
+  const prevParamsRef = useRef<{
+    entityUUID?: string;
+    entityType?: EntityType;
+    walletAddress?: string;
+}>({ entityUUID, entityType, walletAddress: wallet.address });
 
   const refetch = useCallback(async () => {
     if (!entityType || !entityUUID || !wallet.address) {
@@ -78,10 +84,23 @@ export function useSonarPurchase(args: {
   }, []);
 
   useEffect(() => {
-    if (!state.hasFetched && !state.loading) {
-      refetch();
+    const prevParams = prevParamsRef.current;
+    const currentParams = { entityUUID, entityType, walletAddress: wallet.address };
+    
+    // Check if parameters have changed OR if this is the initial fetch
+    const paramsChanged = 
+        prevParams.entityUUID !== currentParams.entityUUID ||
+        prevParams.entityType !== currentParams.entityType ||
+        prevParams.walletAddress !== currentParams.walletAddress;
+    const isInitialFetch = !state.hasFetched && !state.loading;
+    
+    if ((paramsChanged || isInitialFetch) && entityUUID && entityType && wallet.address && !state.loading) {
+        refetch();
     }
-  }, [state.hasFetched, state.loading, refetch]);
+    
+    // Update the ref with current parameters
+    prevParamsRef.current = currentParams;
+}, [entityUUID, entityType, wallet.address, state.hasFetched, state.loading]);
 
   useEffect(() => {
     if (!entityUUID || !entityType || !wallet.address) {
