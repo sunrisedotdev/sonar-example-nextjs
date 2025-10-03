@@ -12,24 +12,24 @@ import { useSonarPurchase } from "./hooks";
 import { WalletConnection } from "@echoxyz/sonar-react";
 
 function PrePurchaseCheckState({
-  prePurchaseCheckState,
+  prePurchaseCheckResponse,
 }: {
-  prePurchaseCheckState: PrePurchaseCheckResponse;
+  prePurchaseCheckResponse: PrePurchaseCheckResponse;
 }) {
   let stateDescription;
   let stateFgColor;
   let stateBgColor;
   if (
-    prePurchaseCheckState.ReadyToPurchase ||
-    (!prePurchaseCheckState.ReadyToPurchase &&
-      prePurchaseCheckState.FailureReason ==
+    prePurchaseCheckResponse.ReadyToPurchase ||
+    (!prePurchaseCheckResponse.ReadyToPurchase &&
+      prePurchaseCheckResponse.FailureReason ==
         PrePurchaseFailureReason.REQUIRES_LIVENESS)
   ) {
     stateFgColor = "text-green-500";
     stateBgColor = "bg-green-50";
     stateDescription = "You are ready to purchase";
   } else if (
-    prePurchaseCheckState.FailureReason ==
+    prePurchaseCheckResponse.FailureReason ==
     PrePurchaseFailureReason.MAX_WALLETS_USED
   ) {
     stateFgColor = "text-amber-500";
@@ -37,7 +37,7 @@ function PrePurchaseCheckState({
     stateDescription =
       "Maximum number of wallets reached. This entity cannot use the connected wallet to commit funds to this sale. Please use a previous wallet or select a different investing entity.";
   } else if (
-    prePurchaseCheckState.FailureReason ==
+    prePurchaseCheckResponse.FailureReason ==
     PrePurchaseFailureReason.NO_RESERVED_ALLOCATION
   ) {
     stateFgColor = "text-amber-500";
@@ -66,7 +66,7 @@ function PurchasePanel({
   entityType?: EntityType;
   wallet: WalletConnection;
 }) {
-  const { loading, prePurchaseCheckResult, generatePurchasePermit, error } =
+  const { loading, prePurchaseCheckResponse, generatePurchasePermit, error } =
     useSonarPurchase({
       saleUUID: sonarConfig.saleUUID,
       entityUUID,
@@ -77,11 +77,12 @@ function PurchasePanel({
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  if (!prePurchaseCheckResult || !generatePurchasePermit) {
-    return null;
-  }
-
   const purchase = async () => {
+    if (!generatePurchasePermit) {
+      setErrorMessage("Not ready to purchase");
+      return;
+    }
+
     try {
       const response = await generatePurchasePermit();
       const r = response as unknown as {
@@ -110,17 +111,19 @@ function PurchasePanel({
     return <p>Error: {error.message}</p>;
   }
 
-  if (!prePurchaseCheckResult) {
-    return <p>Error: No pre purchase check state</p>;
+  if (!prePurchaseCheckResponse) {
+    return <p>Error: No pre purchase check result</p>;
   }
 
   return (
     <div className="flex flex-col gap-2 bg-gray-100 p-4 rounded-xl w-full items-center">
       <h1 className="text-lg font-bold text-gray-900 w-full">Purchase</h1>
 
-      <PrePurchaseCheckState prePurchaseCheckState={prePurchaseCheckResult} />
+      <PrePurchaseCheckState
+        prePurchaseCheckResponse={prePurchaseCheckResponse}
+      />
 
-      {prePurchaseCheckResult.ReadyToPurchase && (
+      {prePurchaseCheckResponse.ReadyToPurchase && (
         <button
           className="cursor-pointer bg-gray-900 rounded-xl px-4 py-2 w-fit"
           onClick={purchase}
@@ -129,12 +132,12 @@ function PurchasePanel({
         </button>
       )}
 
-      {prePurchaseCheckResult.FailureReason ===
+      {prePurchaseCheckResponse.FailureReason ===
         PrePurchaseFailureReason.REQUIRES_LIVENESS && (
         <button
           className="cursor-pointer bg-gray-900 rounded-xl px-4 py-2 w-fit"
           onClick={() => {
-            window.open(prePurchaseCheckResult.LivenessCheckURL, "_blank");
+            window.open(prePurchaseCheckResponse.LivenessCheckURL, "_blank");
           }}
         >
           <p className="text-gray-100">Complete liveness check to purchase</p>

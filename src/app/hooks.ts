@@ -8,7 +8,7 @@ import { useState, useEffect } from "react";
 
 export type UseSonarPurchaseResult = {
   loading: boolean;
-  prePurchaseCheckResult?: PrePurchaseCheckResponse;
+  prePurchaseCheckResponse?: PrePurchaseCheckResponse;
   generatePurchasePermit?: () => Promise<GeneratePurchasePermitResponse>;
   error?: Error;
 };
@@ -69,7 +69,10 @@ export function useSonarPurchase(args: {
   }, [wallet.address, entityUUID, entityType, client]);
 
   const generatePurchasePermit =
-    entityUUID && entityType && wallet.address
+    entityUUID &&
+    entityType &&
+    wallet.address &&
+    prePurchaseCheckState.value?.ReadyToPurchase
       ? ((walletAddress: string) => {
           return async () =>
             await client.generatePurchasePermit({
@@ -84,7 +87,7 @@ export function useSonarPurchase(args: {
   return {
     loading: prePurchaseCheckState.loading,
     error: prePurchaseCheckState.error,
-    prePurchaseCheckResult: prePurchaseCheckState.value,
+    prePurchaseCheckResponse: prePurchaseCheckState.value,
     generatePurchasePermit,
   };
 }
