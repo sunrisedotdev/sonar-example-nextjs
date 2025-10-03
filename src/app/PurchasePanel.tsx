@@ -3,14 +3,12 @@
 import {
   PrePurchaseFailureReason,
   PrePurchaseCheckResponse,
-  SaleEligibility,
-  EntitySetupState,
   AllocationPermit,
 } from "@echoxyz/sonar-core";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { sonarConfig } from "./config";
-import { useSonarClient, useSonarEntity } from "@echoxyz/sonar-react";
 import { useAccount } from "wagmi";
+import { useSonarPurchase } from "./hooks";
 
 function PrePurchaseCheckState({
   prePurchaseCheckState,
@@ -61,78 +59,29 @@ function PrePurchaseCheckState({
 function PurchasePanel() {
   const { address, isConnected } = useAccount();
   const {
-    authenticated,
-    loading: entityLoading,
-    entity,
-  } = useSonarEntity({
+    loading,
+    prePurchaseCheckResult,
+    generatePurchasePermit,
+    error,
+  } = useSonarPurchase({
     saleUUID: sonarConfig.saleUUID,
     wallet: { address, isConnected },
   });
-  const client = useSonarClient();
 
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const [prePurchaseCheckState, setPrePurchaseCheckState] = useState<{
-    loading: boolean;
-    value?: PrePurchaseCheckResponse;
-    error?: Error;
-  }>({
-    loading: false,
-  });
-
-  useEffect(() => {
-    const prePurchaseCheck = async () => {
-      if (!address || !authenticated || !entity) {
-        return;
-      }
-
-      setPrePurchaseCheckState((prev) => ({
-        ...prev,
-        loading: true,
-        error: undefined,
-      }));
-
-      try {
-        const response = await client.prePurchaseCheck({
-          saleUUID: sonarConfig.saleUUID,
-          entityType: entity.EntityType,
-          entityUUID: entity.EntityUUID,
-          walletAddress: address,
-        });
-        setPrePurchaseCheckState({
-          loading: false,
-          value: response,
-        });
-      } catch (error) {
-        setPrePurchaseCheckState({
-          loading: false,
-          error: error instanceof Error ? error : new Error(String(error)),
-        });
-      }
-    };
-
-    prePurchaseCheck();
-  }, [address, authenticated, entity, client]);
-
   if (
     !address ||
-    entityLoading ||
-    entity?.SaleEligibility !== SaleEligibility.ELIGIBLE ||
-    entity?.EntitySetupState !== EntitySetupState.COMPLETE ||
-    !prePurchaseCheckState
+    !prePurchaseCheckResult ||
+    !generatePurchasePermit
   ) {
     return null;
   }
 
   const purchase = async () => {
     try {
-      const response = await client.generatePurchasePermit({
-        saleUUID: sonarConfig.saleUUID,
-        entityUUID: entity.EntityUUID,
-        entityType: entity.EntityType,
-        walletAddress: address,
-      });
+      const response = await generatePurchasePermit();
       const r = response as unknown as {
         Signature: string;
         PermitJSON: AllocationPermit;
@@ -151,15 +100,15 @@ function PurchasePanel() {
     setErrorMessage("Failed to generate purchase permit");
   };
 
-  if (prePurchaseCheckState.loading) {
+  if (loading) {
     return <p>Loading...</p>;
   }
 
-  if (prePurchaseCheckState.error) {
-    return <p>Error: {prePurchaseCheckState.error.message}</p>;
+  if (error) {
+    return <p>Error: {error.message}</p>;
   }
 
-  if (!prePurchaseCheckState.value) {
+  if (!prePurchaseCheckResult) {
     return <p>Error: No pre purchase check state</p>;
   }
 
@@ -168,10 +117,10 @@ function PurchasePanel() {
       <h1 className="text-lg font-bold text-gray-900 w-full">Purchase</h1>
 
       <PrePurchaseCheckState
-        prePurchaseCheckState={prePurchaseCheckState.value}
+        prePurchaseCheckState={prePurchaseCheckResult}
       />
 
-      {prePurchaseCheckState.value.ReadyToPurchase && (
+      {prePurchaseCheckResult.ReadyToPurchase && (
         <button
           className="cursor-pointer bg-gray-900 rounded-xl px-4 py-2 w-fit"
           onClick={purchase}
@@ -180,13 +129,13 @@ function PurchasePanel() {
         </button>
       )}
 
-      {prePurchaseCheckState.value.FailureReason ===
+      {prePurchaseCheckResult.FailureReason ===
         PrePurchaseFailureReason.REQUIRES_LIVENESS && (
         <button
           className="cursor-pointer bg-gray-900 rounded-xl px-4 py-2 w-fit"
           onClick={() => {
             window.open(
-              prePurchaseCheckState.value?.LivenessCheckURL,
+              prePurchaseCheckResult.LivenessCheckURL,
               "_blank"
             );
           }}
