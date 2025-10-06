@@ -114,8 +114,6 @@ function PurchasePanel({
     return null;
   }
 
-  console.log("prePurchaseCheckResponse", prePurchaseCheckResponse);
-
   return (
     <div className="flex flex-col gap-2 bg-gray-100 p-4 rounded-xl w-full items-center">
       <h1 className="text-lg font-bold text-gray-900 w-full">Purchase</h1>

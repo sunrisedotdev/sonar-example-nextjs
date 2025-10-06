@@ -5,10 +5,7 @@ import {
   EntityDetails,
   APIError,
 } from "@echoxyz/sonar-core";
-import {
-  useSonarAuth,
-  useSonarClient,
-} from "@echoxyz/sonar-react";
+import { useSonarAuth, useSonarClient } from "@echoxyz/sonar-react";
 import { useState, useEffect, useCallback } from "react";
 
 export type UseSonarEntityResult = {
@@ -47,7 +44,6 @@ export function useSonarEntity(args: {
 
   const refetch = useCallback(async () => {
     if (!walletAddress || !fullyConnected) {
-
       return;
     }
     setState((s) => ({ ...s, loading: true }));
@@ -97,21 +93,18 @@ export function useSonarEntity(args: {
   }, []);
 
   useEffect(() => {
-    if (fullyConnected && !state.loading && !state.hasFetched) {
+    if (fullyConnected && state.walletAddress !== walletAddress) {
+      console.log("refetching entity");
       refetch();
     }
-  }, [fullyConnected, state.loading, state.hasFetched, refetch]);
+  }, [fullyConnected, state.walletAddress, walletAddress, refetch]);
 
   useEffect(() => {
-    if (
-      ready &&
-      (!authenticated ||
-        !walletAddress ||
-        state.walletAddress !== walletAddress)
-    ) {
+    if (ready && (!authenticated || !walletAddress)) {
+      console.log("resetting entity");
       reset();
     }
-  }, [ready, authenticated, walletAddress, reset, state.walletAddress]);
+  }, [ready, authenticated, walletAddress, reset]);
 
   return {
     authenticated,
@@ -177,7 +170,6 @@ export function useSonarPurchase(args: {
         hasFetched: true,
       });
     } catch (error) {
-      console.log("refetch error", error);
       setState({
         loading: false,
         value: undefined,
@@ -199,34 +191,38 @@ export function useSonarPurchase(args: {
   }, []);
 
   useEffect(() => {
-    if (entityUUID && !state.loading && !state.hasFetched) {
+    if (entityUUID && state.walletAddress !== walletAddress) {
+      console.log("refetching purchase");
       refetch();
     }
-  }, [entityUUID, state.loading, state.hasFetched, refetch]);
+  }, [entityUUID, state.walletAddress, walletAddress, refetch]);
 
   useEffect(() => {
-    if (!entityUUID || !walletAddress || state.walletAddress !== walletAddress) {
+    if (!entityUUID || !walletAddress) {
+      console.log("resetting purchase");
       reset();
     }
-  }, [entityUUID, walletAddress, state.walletAddress, reset]);
+  }, [entityUUID, walletAddress, reset]);
 
   const generatePurchasePermit = useCallback(() => {
     if (!entityUUID || !walletAddress || !entityType) {
-        // Should never happen because this callback is returned as undefined if the pre-purchase check has not run
-        throw new Error("entityUUID and walletAddress are required");
+      // Should never happen because this callback is returned as undefined if the pre-purchase check has not run
+      throw new Error("entityUUID and walletAddress are required");
     }
     return client.generatePurchasePermit({
-        saleUUID,
-        entityUUID,
-        entityType,
-        walletAddress,
+      saleUUID,
+      entityUUID,
+      entityType,
+      walletAddress,
     });
-}, [client, saleUUID, entityUUID, walletAddress, entityType]);
+  }, [client, saleUUID, entityUUID, walletAddress, entityType]);
 
-return {
+  return {
     loading: state.loading,
     error: state.error,
     prePurchaseCheckResponse: state.value,
-    generatePurchasePermit: state.value?.ReadyToPurchase ? generatePurchasePermit : undefined,
-};
+    generatePurchasePermit: state.value?.ReadyToPurchase
+      ? generatePurchasePermit
+      : undefined,
+  };
 }
