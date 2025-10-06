@@ -2,41 +2,44 @@
 
 import {
   PrePurchaseFailureReason,
-  PrePurchaseCheckResponse,
   AllocationPermit,
   EntityType,
+  GeneratePurchasePermitResponse,
 } from "@echoxyz/sonar-core";
 import { useState } from "react";
 import { sonarConfig } from "./config";
-import { useSonarPurchase } from "./hooks";
+import {
+  useSonarPurchase,
+  UseSonarPurchaseNotReadyToPurchaseResult,
+  UseSonarPurchaseReadyToPurchaseResult,
+} from "./hooks";
 
 function PrePurchaseCheckState({
-  prePurchaseCheckResponse,
+  sonarPurchaser,
 }: {
-  prePurchaseCheckResponse: PrePurchaseCheckResponse;
+  sonarPurchaser:
+    | UseSonarPurchaseReadyToPurchaseResult
+    | UseSonarPurchaseNotReadyToPurchaseResult;
 }) {
   let stateDescription;
   let stateFgColor;
   let stateBgColor;
   if (
-    prePurchaseCheckResponse.ReadyToPurchase ||
-    (!prePurchaseCheckResponse.ReadyToPurchase &&
-      prePurchaseCheckResponse.FailureReason ==
-        PrePurchaseFailureReason.REQUIRES_LIVENESS)
+    sonarPurchaser.readyToPurchase ||
+    sonarPurchaser.failureReason == PrePurchaseFailureReason.REQUIRES_LIVENESS
   ) {
     stateFgColor = "text-green-500";
     stateBgColor = "bg-green-50";
     stateDescription = "You are ready to purchase";
   } else if (
-    prePurchaseCheckResponse.FailureReason ==
-    PrePurchaseFailureReason.MAX_WALLETS_USED
+    sonarPurchaser.failureReason == PrePurchaseFailureReason.MAX_WALLETS_USED
   ) {
     stateFgColor = "text-amber-500";
     stateBgColor = "bg-amber-50";
     stateDescription =
       "Maximum number of wallets reached. This entity cannot use the connected wallet to commit funds to this sale. Please use a previous wallet or select a different investing entity.";
   } else if (
-    prePurchaseCheckResponse.FailureReason ==
+    sonarPurchaser.failureReason ==
     PrePurchaseFailureReason.NO_RESERVED_ALLOCATION
   ) {
     stateFgColor = "text-amber-500";
@@ -56,32 +59,16 @@ function PrePurchaseCheckState({
   );
 }
 
-function PurchasePanel({
-  entityUUID,
-  entityType,
-  walletAddress,
+function PurchaseButton({
+  generatePurchasePermit,
+  onSuccess,
+  onError,
 }: {
-  entityUUID?: string;
-  entityType?: EntityType;
-  walletAddress?: string;
+  generatePurchasePermit: () => Promise<GeneratePurchasePermitResponse>;
+  onSuccess: (message: string) => void;
+  onError: (message: string) => void;
 }) {
-  const { loading, prePurchaseCheckResponse, generatePurchasePermit, error } =
-    useSonarPurchase({
-      saleUUID: sonarConfig.saleUUID,
-      entityUUID,
-      entityType,
-      walletAddress,
-    });
-
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
   const purchase = async () => {
-    if (!generatePurchasePermit) {
-      setErrorMessage("Not ready to purchase");
-      return;
-    }
-
     try {
       const response = await generatePurchasePermit();
       const r = response as unknown as {
@@ -91,57 +78,80 @@ function PurchasePanel({
       if (r.Signature && r.PermitJSON) {
         // These would get sent to the contract to commit funds
         console.log("response", response);
-        setSuccessMessage("Purchase successful");
+        onSuccess("Purchase successful");
         return;
       }
     } catch (error) {
-      setErrorMessage("Failed to generate purchase permit: " + error);
+      onError("Failed to generate purchase permit: " + error);
       return;
     }
 
-    setErrorMessage("Failed to generate purchase permit");
+    onError("Failed to generate purchase permit");
   };
 
-  if (loading) {
+  return (
+    <button
+      className="cursor-pointer bg-gray-900 rounded-xl px-4 py-2 w-fit"
+      onClick={purchase}
+    >
+      <p className="text-gray-100">Purchase</p>
+    </button>
+  );
+}
+
+function PurchasePanel({
+  entityUUID,
+  entityType,
+  walletAddress,
+}: {
+  entityUUID: string;
+  entityType: EntityType;
+  walletAddress: string;
+}) {
+  const sonarPurchaser = useSonarPurchase({
+    saleUUID: sonarConfig.saleUUID,
+    entityUUID,
+    entityType,
+    walletAddress,
+  });
+
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  if (sonarPurchaser.loading) {
     return <p>Loading...</p>;
   }
 
-  if (error) {
-    return <p>Error: {error.message}</p>;
-  }
-
-  if (!prePurchaseCheckResponse) {
-    return null;
+  if (sonarPurchaser.error) {
+    return <p>Error: {sonarPurchaser.error.message}</p>;
   }
 
   return (
     <div className="flex flex-col gap-2 bg-gray-100 p-4 rounded-xl w-full items-center">
       <h1 className="text-lg font-bold text-gray-900 w-full">Purchase</h1>
 
-      <PrePurchaseCheckState
-        prePurchaseCheckResponse={prePurchaseCheckResponse}
-      />
+      <PrePurchaseCheckState sonarPurchaser={sonarPurchaser} />
 
-      {prePurchaseCheckResponse.ReadyToPurchase && (
-        <button
-          className="cursor-pointer bg-gray-900 rounded-xl px-4 py-2 w-fit"
-          onClick={purchase}
-        >
-          <p className="text-gray-100">Purchase</p>
-        </button>
+      {sonarPurchaser.readyToPurchase && (
+        <PurchaseButton
+          generatePurchasePermit={sonarPurchaser.generatePurchasePermit}
+          onSuccess={setSuccessMessage}
+          onError={setErrorMessage}
+        />
       )}
 
-      {prePurchaseCheckResponse.FailureReason ===
-        PrePurchaseFailureReason.REQUIRES_LIVENESS && (
-        <button
-          className="cursor-pointer bg-gray-900 rounded-xl px-4 py-2 w-fit"
-          onClick={() => {
-            window.open(prePurchaseCheckResponse.LivenessCheckURL, "_blank");
-          }}
-        >
-          <p className="text-gray-100">Complete liveness check to purchase</p>
-        </button>
-      )}
+      {!sonarPurchaser.readyToPurchase &&
+        sonarPurchaser.failureReason ===
+          PrePurchaseFailureReason.REQUIRES_LIVENESS && (
+          <button
+            className="cursor-pointer bg-gray-900 rounded-xl px-4 py-2 w-fit"
+            onClick={() => {
+              window.open(sonarPurchaser.livenessCheckURL, "_blank");
+            }}
+          >
+            <p className="text-gray-100">Complete liveness check to purchase</p>
+          </button>
+        )}
 
       {successMessage && <p className="text-green-500">{successMessage}</p>}
 
