@@ -9,7 +9,6 @@ import {
 import { useState } from "react";
 import { sonarConfig } from "./config";
 import { useSonarPurchase } from "./hooks";
-import { WalletConnection } from "@echoxyz/sonar-react";
 
 function PrePurchaseCheckState({
   prePurchaseCheckResponse,
@@ -60,18 +59,18 @@ function PrePurchaseCheckState({
 function PurchasePanel({
   entityUUID,
   entityType,
-  wallet,
+  walletAddress,
 }: {
   entityUUID?: string;
   entityType?: EntityType;
-  wallet: WalletConnection;
+  walletAddress?: string;
 }) {
   const { loading, prePurchaseCheckResponse, generatePurchasePermit, error } =
     useSonarPurchase({
       saleUUID: sonarConfig.saleUUID,
       entityUUID,
       entityType,
-      wallet,
+      walletAddress,
     });
 
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -114,6 +113,8 @@ function PurchasePanel({
   if (!prePurchaseCheckResponse) {
     return null;
   }
+
+  console.log("prePurchaseCheckResponse", prePurchaseCheckResponse);
 
   return (
     <div className="flex flex-col gap-2 bg-gray-100 p-4 rounded-xl w-full items-center">

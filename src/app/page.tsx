@@ -1,12 +1,13 @@
 "use client";
 
 import { ConnectKitButton } from "connectkit";
-import { useSonarAuth, useSonarEntity } from "@echoxyz/sonar-react";
+import { useSonarAuth } from "@echoxyz/sonar-react";
 import { sonarConfig, sonarHomeURL } from "./config";
 import SonarEntity from "./SonarEntity";
 import { useAccount } from "wagmi";
 import PurchasePanel from "./PurchasePanel";
 import { EntityDetails } from "@echoxyz/sonar-core";
+import { useSonarEntity } from "./hooks";
 
 const SonarAuthButton = ({
   authenticated,
@@ -40,7 +41,7 @@ export default function Home() {
   const { login, authenticated, logout } = useSonarAuth();
   const { loading, entity, error } = useSonarEntity({
     saleUUID: sonarConfig.saleUUID,
-    wallet: { address, isConnected },
+    walletAddress: address,
   });
 
   return (
@@ -63,7 +64,7 @@ export default function Home() {
       <PurchasePanel
         entityUUID={entity?.EntityUUID}
         entityType={entity?.EntityType}
-        wallet={{ address, isConnected }}
+        walletAddress={address}
       />
     </div>
   );
