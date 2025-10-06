@@ -10,16 +10,16 @@ import { useState } from "react";
 import { sonarConfig } from "./config";
 import {
   useSonarPurchase,
-  UseSonarPurchaseNotReadyToPurchaseResult,
-  UseSonarPurchaseReadyToPurchaseResult,
+  UseSonarPurchaseResultReadyToPurchase,
+  UseSonarPurchaseResultNotReadyToPurchase,
 } from "./hooks";
 
 function PrePurchaseCheckState({
   sonarPurchaser,
 }: {
   sonarPurchaser:
-    | UseSonarPurchaseReadyToPurchaseResult
-    | UseSonarPurchaseNotReadyToPurchaseResult;
+    | UseSonarPurchaseResultReadyToPurchase
+    | UseSonarPurchaseResultNotReadyToPurchase;
 }) {
   let stateDescription;
   let stateFgColor;
