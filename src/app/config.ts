@@ -1,6 +1,4 @@
 export const sonarConfig = {
-  saleUUID:
-    process.env.REACT_APP_SALE_UUID ?? "510f2069-69e3-4cb1-bed1-2ad49513ee80",
   clientUUID:
     process.env.REACT_APP_OAUTH_CLIENT_UUID ??
     "da4e8c0c-f514-438a-adab-d7bb0ed4fc85",
@@ -13,7 +11,10 @@ export const sonarConfig = {
   tokenStorageKey: "sonar:auth-token",
 };
 
+export const saleUUID =
+  process.env.REACT_APP_SALE_UUID ?? "510f2069-69e3-4cb1-bed1-2ad49513ee80";
+
 export const sonarHomeURL = new URL(
-  `/sonar/${sonarConfig.saleUUID}/home`,
+  `/sonar/${saleUUID}/home`,
   sonarConfig.frontendURL
 );
