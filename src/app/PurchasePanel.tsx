@@ -13,49 +13,55 @@ import {
   UseSonarPurchaseResultReadyToPurchase,
 } from "@echoxyz/sonar-react";
 
-function PrePurchaseCheckState({
-  sonarPurchaser,
-}: {
+function readinessConfig(
   sonarPurchaser:
     | UseSonarPurchaseResultReadyToPurchase
-    | UseSonarPurchaseResultNotReadyToPurchase;
-}) {
-  let stateDescription;
-  let stateFgColor;
-  let stateBgColor;
-  if (
-    sonarPurchaser.readyToPurchase ||
-    sonarPurchaser.failureReason == PrePurchaseFailureReason.REQUIRES_LIVENESS
-  ) {
-    stateFgColor = "text-green-500";
-    stateBgColor = "bg-green-50";
-    stateDescription = "You are ready to purchase";
-  } else if (
-    sonarPurchaser.failureReason == PrePurchaseFailureReason.MAX_WALLETS_USED
-  ) {
-    stateFgColor = "text-amber-500";
-    stateBgColor = "bg-amber-50";
-    stateDescription =
-      "Maximum number of wallets reached. This entity cannot use the connected wallet to commit funds to this sale. Please use a previous wallet or select a different investing entity.";
-  } else if (
-    sonarPurchaser.failureReason ==
-    PrePurchaseFailureReason.NO_RESERVED_ALLOCATION
-  ) {
-    stateFgColor = "text-amber-500";
-    stateBgColor = "bg-amber-50";
-    stateDescription =
-      "No reserved allocation. The connected wallet has no reserved allocation for this sale. Please connect a different wallet.";
-  } else {
-    stateFgColor = "text-red-500";
-    stateBgColor = "bg-red-50";
-    stateDescription = "Unknown failure reason. Please contact support.";
+    | UseSonarPurchaseResultNotReadyToPurchase
+) {
+  const okConfig = (msg: string) => ({
+    fgCol: "text-green-500",
+    bgCol: "bg-green-50",
+    description: msg,
+  });
+
+  const warningConfig = (msg: string) => ({
+    fgCol: "text-amber-500",
+    bgCol: "bg-amber-50",
+    description: msg,
+  });
+
+  const errorConfig = (msg: string) => ({
+    fgCol: "text-red-500",
+    bgCol: "bg-red-50",
+    description: msg,
+  });
+
+  if (sonarPurchaser.readyToPurchase) {
+    return okConfig("You are ready to purchase");
   }
 
-  return (
-    <div className={`${stateBgColor} p-2 rounded-md w-full`}>
-      <p className={`${stateFgColor} w-full`}>{stateDescription}</p>
-    </div>
-  );
+  switch (sonarPurchaser.failureReason) {
+    case PrePurchaseFailureReason.REQUIRES_LIVENESS:
+      return okConfig("Complete a liveness check in order to purchase.");
+    case PrePurchaseFailureReason.WALLET_RISK:
+      return warningConfig(
+        "The connected wallet is not eligible for this sale. Connect a different wallet."
+      );
+    case PrePurchaseFailureReason.MAX_WALLETS_USED:
+      return warningConfig(
+        "Maximum number of wallets reached — This entity can’t use the connected wallet. Use a previous wallet."
+      );
+    case PrePurchaseFailureReason.NO_RESERVED_ALLOCATION:
+      return warningConfig(
+        "No reserved allocation — The connected wallet doesn’t have a reserved spot for this sale. Connect a different wallet."
+      );
+    case PrePurchaseFailureReason.SALE_NOT_ACTIVE:
+      return errorConfig("The sale is not currently active.");
+    default:
+      return errorConfig(
+        "An unknown error occurred — Please try again or contact support."
+      );
+  }
 }
 
 function PurchaseButton({
@@ -122,11 +128,19 @@ function PurchasePanel({
     return <p>Error: {sonarPurchaser.error.message}</p>;
   }
 
+  const readinessCfg = readinessConfig(sonarPurchaser);
+
   return (
     <div className="flex flex-col gap-2 bg-gray-100 p-4 rounded-xl w-full items-center">
       <h1 className="text-lg font-bold text-gray-900 w-full">Purchase</h1>
 
-      <PrePurchaseCheckState sonarPurchaser={sonarPurchaser} />
+      <div
+        className={`${readinessCfg.bgCol} p-2 rounded-md w-full`}
+      >
+        <p className={`${readinessCfg.fgCol} w-full`}>
+          {readinessCfg.description}
+        </p>
+      </div>
 
       {sonarPurchaser.readyToPurchase && (
         <PurchaseButton
