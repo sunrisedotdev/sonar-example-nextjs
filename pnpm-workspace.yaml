@@ -8,3 +8,7 @@ onlyBuiltDependencies:
   - sharp
   - unrs-resolver
   - utf-8-validate
+publicHoistPattern:
+  # https://github.com/pnpm/pnpm/issues/8878#issuecomment-2546442011
+  - "@next/eslint-plugin-next"
+  - "eslint-plugin-react-hooks"

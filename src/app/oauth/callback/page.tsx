@@ -9,13 +9,13 @@ export default function OAuthCallback() {
     const [oauthError, setOAuthError] = useState<string | null>(null);
     const [timedOut, setTimedOut] = useState(false);
 
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get("code");
-    const state = params.get("state");
-
     // complete the oauth flow and exchange the code for an access token
     useEffect(() => {
         const processOAuthCallback = async () => {
+            const params = new URLSearchParams(window.location.search);
+            const code = params.get("code");
+            const state = params.get("state");
+
             // the user is already authenticated, nothing to do
             if (!ready || authenticated || !code || !state) {
                 return;
@@ -35,7 +35,7 @@ export default function OAuthCallback() {
         };
 
         processOAuthCallback();
-    }, [authenticated, completeOAuth, code, ready, state]);
+    }, [authenticated, completeOAuth, ready]);
 
     // fetch the user's available entities after they've been authenticated
     useEffect(() => {
