@@ -10,7 +10,7 @@ export const sonarConfig = {
 };
 
 export const saleUUID =
-  process.env.REACT_APP_SALE_UUID ?? "510f2069-69e3-4cb1-bed1-2ad49513ee80";
+  process.env.REACT_APP_SALE_UUID ?? "c3e73992-d3d3-4c83-8709-d5864221da46";
 
 export const sonarHomeURL = new URL(
   `/sonar/${saleUUID}/home`,
