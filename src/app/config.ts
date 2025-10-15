@@ -16,3 +16,5 @@ export const sonarHomeURL = new URL(
   `/sonar/${saleUUID}/home`,
   sonarConfig.frontendURL ?? "https://app.echo.xyz"
 );
+
+export const saleContract = "0x296609c8631992C540CD418bF71E1089cDD6A651";

@@ -2,7 +2,6 @@
 
 import {
   PrePurchaseFailureReason,
-  AllocationPermit,
   GeneratePurchasePermitResponse,
 } from "@echoxyz/sonar-core";
 import { useState } from "react";
@@ -12,6 +11,7 @@ import {
   UseSonarPurchaseResultNotReadyToPurchase,
   UseSonarPurchaseResultReadyToPurchase,
 } from "@echoxyz/sonar-react";
+import { useSaleContract } from "./hooks";
 
 function readinessConfig(
   sonarPurchaser:
@@ -64,61 +64,89 @@ function readinessConfig(
   }
 }
 
-function PurchaseButton({
+function ReadyToPurchasePanel({
+  entityID,
   generatePurchasePermit,
-  onSuccess,
-  onError,
 }: {
+  entityID: `0x${string}`;
   generatePurchasePermit: () => Promise<GeneratePurchasePermitResponse>;
-  onSuccess: (message: string) => void;
-  onError: (message: string) => void;
 }) {
-  const purchase = async () => {
-    try {
-      const response = await generatePurchasePermit();
-      const r = response as unknown as {
-        Signature: string;
-        PermitJSON: AllocationPermit;
-      };
-      if (r.Signature && r.PermitJSON) {
-        // These would get sent to the contract to commit funds
-        console.log("response", response);
-        onSuccess("Purchase successful");
-        return;
-      }
-    } catch (error) {
-      onError("Failed to generate purchase permit: " + error);
-      return;
-    }
+  const { commitWithPermit, amountInContract, awaitingTxReceipt, txReceipt, awaitingTxReceiptError } =
+    useSaleContract(entityID);
 
-    onError("Failed to generate purchase permit");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<Error | undefined>(undefined);
+
+  const purchase = async () => {
+    setLoading(true);
+    setError(undefined);
+    try {
+      const purchasePermitResp = await generatePurchasePermit();
+      await commitWithPermit({
+        purchasePermitResp: purchasePermitResp,
+        // TODO: could support selecting the amount
+        amount: BigInt(1e8),
+      });
+    } catch (error) {
+      setError(error as Error);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // TODO: could fetch and show the user their allocation
   return (
-    <button
-      className="cursor-pointer bg-gray-900 rounded-xl px-4 py-2 w-fit"
-      onClick={purchase}
-    >
-      <p className="text-gray-100">Purchase</p>
-    </button>
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2 items-center">
+        <button
+          disabled={loading || awaitingTxReceipt}
+          className="cursor-pointer bg-gray-900 rounded-xl px-4 py-2 w-fit"
+          onClick={purchase}
+        >
+          <p className="text-gray-100">
+            {loading || awaitingTxReceipt ? "Loading..." : "Purchase 100"}
+          </p>
+        </button>
+
+        {awaitingTxReceipt && !txReceipt && (
+          <p className="text-gray-900">Waiting for transaction receipt...</p>
+        )}
+        {txReceipt?.status === "success" && (
+          <p className="text-green-500">Purchase successful</p>
+        )}
+        {txReceipt?.status === "reverted" && (
+          <p className="text-red-500">Purchase reverted</p>
+        )}
+        {error && <p className="text-red-500 wrap-anywhere">{error.message}</p>}
+        {awaitingTxReceiptError && <p className="text-red-500 wrap-anywhere">{awaitingTxReceiptError.message}</p>}
+      </div>
+
+      <div className="bg-white p-2 rounded-md w-fit">
+        <p className="text-gray-900">
+          Current amount in contract:{" "}
+          {amountInContract
+            ? `${Number(amountInContract.amount) / 1e6}`
+            : "Loading..."}
+        </p>
+      </div>
+    </div>
   );
 }
 
 function PurchasePanel({
   entityUUID,
+  entityID,
   walletAddress,
 }: {
   entityUUID: string;
-  walletAddress: string;
+  entityID: `0x${string}`;
+  walletAddress: `0x${string}`;
 }) {
   const sonarPurchaser = useSonarPurchase({
     saleUUID,
     entityUUID,
     walletAddress,
   });
-
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   if (sonarPurchaser.loading) {
     return <p>Loading...</p>;
@@ -131,41 +159,38 @@ function PurchasePanel({
   const readinessCfg = readinessConfig(sonarPurchaser);
 
   return (
-    <div className="flex flex-col gap-2 bg-gray-100 p-4 rounded-xl w-full items-center">
-      <h1 className="text-lg font-bold text-gray-900 w-full">Purchase</h1>
+    <div className="flex flex-col gap-8 bg-gray-100 p-4 rounded-xl w-full">
+      <div className="flex flex-col gap-2 items-center">
+        <h1 className="text-lg font-bold text-gray-900 w-full">Purchase</h1>
 
-      <div
-        className={`${readinessCfg.bgCol} p-2 rounded-md w-full`}
-      >
-        <p className={`${readinessCfg.fgCol} w-full`}>
-          {readinessCfg.description}
-        </p>
-      </div>
+        <div className={`${readinessCfg.bgCol} p-2 rounded-md w-full`}>
+          <p className={`${readinessCfg.fgCol} w-full`}>
+            {readinessCfg.description}
+          </p>
+        </div>
 
-      {sonarPurchaser.readyToPurchase && (
-        <PurchaseButton
-          generatePurchasePermit={sonarPurchaser.generatePurchasePermit}
-          onSuccess={setSuccessMessage}
-          onError={setErrorMessage}
-        />
-      )}
-
-      {!sonarPurchaser.readyToPurchase &&
-        sonarPurchaser.failureReason ===
-          PrePurchaseFailureReason.REQUIRES_LIVENESS && (
-          <button
-            className="cursor-pointer bg-gray-900 rounded-xl px-4 py-2 w-fit"
-            onClick={() => {
-              window.open(sonarPurchaser.livenessCheckURL, "_blank");
-            }}
-          >
-            <p className="text-gray-100">Complete liveness check to purchase</p>
-          </button>
+        {sonarPurchaser.readyToPurchase && (
+          <ReadyToPurchasePanel
+            entityID={entityID}
+            generatePurchasePermit={sonarPurchaser.generatePurchasePermit}
+          />
         )}
 
-      {successMessage && <p className="text-green-500">{successMessage}</p>}
-
-      {errorMessage && <p className="text-red-500">{errorMessage}</p>}
+        {!sonarPurchaser.readyToPurchase &&
+          sonarPurchaser.failureReason ===
+            PrePurchaseFailureReason.REQUIRES_LIVENESS && (
+            <button
+              className="cursor-pointer bg-gray-900 rounded-xl px-4 py-2 w-fit"
+              onClick={() => {
+                window.open(sonarPurchaser.livenessCheckURL, "_blank");
+              }}
+            >
+              <p className="text-gray-100">
+                Complete liveness check to purchase
+              </p>
+            </button>
+          )}
+      </div>
     </div>
   );
 }

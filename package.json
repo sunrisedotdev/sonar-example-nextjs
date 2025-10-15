@@ -7,10 +7,10 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint"
-  },  
+  },
   "dependencies": {
-    "@echoxyz/sonar-core": "^0.4.0",
-    "@echoxyz/sonar-react": "^0.6.0",
+    "@echoxyz/sonar-core": "^0.4.1",
+    "@echoxyz/sonar-react": "^0.6.1",
     "@tanstack/react-query": "^5.90.2",
     "connectkit": "^1.9.1",
     "next": "15.5.4",

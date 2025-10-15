@@ -61,7 +61,7 @@ export default function Home() {
         walletAddress={address}
       />
       {entity && address && (
-        <PurchasePanel entityUUID={entity.EntityUUID} walletAddress={address} />
+        <PurchasePanel entityUUID={entity.EntityUUID} entityID={entity.ObfuscatedEntityID} walletAddress={address} />
       )}
     </div>
   );
