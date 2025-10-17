@@ -1,4 +1,4 @@
-import { GeneratePurchasePermitResponse, Hex } from "@echoxyz/sonar-core";
+import { GeneratePurchasePermitResponse } from "@echoxyz/sonar-core";
 import { useCallback, useEffect, useState } from "react";
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { saleContract } from "./config";
@@ -34,25 +34,27 @@ export const useSaleContract = (walletAddress: `0x${string}`) => {
             }
 
             const { request } = await simulateContract(config, {
-                address: saleContract,
-                abi: examplSaleABI,
-                functionName: "purchase",
-                args: [
-                    amount,
-                    {
-                        permit: {
-                            entityID: arrayToHex(purchasePermitResp.PermitJSON.Permit.EntityID),
-                            saleUUID: arrayToHex(purchasePermitResp.PermitJSON.Permit.SaleUUID),
-                            wallet: purchasePermitResp.PermitJSON.Permit.Wallet as Hex,
-                            expiresAt: BigInt(purchasePermitResp.PermitJSON.Permit.ExpiresAt),
-                            payload: arrayToHex(purchasePermitResp.PermitJSON.Permit.Payload),
-                        },
-                        reservedAmount: BigInt(purchasePermitResp.PermitJSON.ReservedAmount),
-                        minAmount: BigInt(purchasePermitResp.PermitJSON.MinAmount),
-                        maxAmount: BigInt(purchasePermitResp.PermitJSON.MaxAmount),
-                    },
-                    base64ToHex(purchasePermitResp.Signature),
-                ] as const,
+              address: saleContract,
+              abi: examplSaleABI,
+              functionName: "purchase",
+              args: [
+                amount,
+                {
+                  permit: {
+                    entityID: purchasePermitResp.PermitJSON.Permit.EntityID,
+                    saleUUID: purchasePermitResp.PermitJSON.Permit.SaleUUID,
+                    wallet: purchasePermitResp.PermitJSON.Permit.Wallet,
+                    expiresAt: BigInt(purchasePermitResp.PermitJSON.Permit.ExpiresAt),
+                    payload: purchasePermitResp.PermitJSON.Permit.Payload,
+                  },
+                  reservedAmount: BigInt(
+                    purchasePermitResp.PermitJSON.ReservedAmount
+                  ),
+                  minAmount: BigInt(purchasePermitResp.PermitJSON.MinAmount),
+                  maxAmount: BigInt(purchasePermitResp.PermitJSON.MaxAmount),
+                },
+                purchasePermitResp.Signature,
+              ] as const,
             });
 
             setTxHash(
@@ -92,22 +94,3 @@ export const useSaleContract = (walletAddress: `0x${string}`) => {
         awaitingTxReceiptError,
     };
 };
-
-function arrayToHex(arr: Uint8Array | number[] | undefined | null): Hex {
-    if (!arr) {
-        return "0x";
-    }
-
-    return `0x${Array.from(arr)
-        .map((byte) => byte.toString(16).padStart(2, "0"))
-        .join("")}`;
-}
-
-function base64ToHex(base64: string | null): Hex {
-    if (!base64) {
-        return "0x";
-    }
-    const binary = atob(base64);
-    const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
-    return arrayToHex(bytes);
-}
