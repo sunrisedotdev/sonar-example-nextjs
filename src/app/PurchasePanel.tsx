@@ -11,7 +11,7 @@ import {
 import { useSaleContract } from "./hooks";
 
 function readinessConfig(
-    sonarPurchaser: UseSonarPurchaseResultReadyToPurchase | UseSonarPurchaseResultNotReadyToPurchase,
+    sonarPurchaser: UseSonarPurchaseResultReadyToPurchase | UseSonarPurchaseResultNotReadyToPurchase
 ) {
     const okConfig = (msg: string) => ({
         fgCol: "text-green-500",
@@ -42,11 +42,11 @@ function readinessConfig(
             return warningConfig("The connected wallet is not eligible for this sale. Connect a different wallet.");
         case PrePurchaseFailureReason.MAX_WALLETS_USED:
             return warningConfig(
-                "Maximum number of wallets reached — This entity can’t use the connected wallet. Use a previous wallet.",
+                "Maximum number of wallets reached — This entity can’t use the connected wallet. Use a previous wallet."
             );
         case PrePurchaseFailureReason.NO_RESERVED_ALLOCATION:
             return warningConfig(
-                "No reserved allocation — The connected wallet doesn’t have a reserved spot for this sale. Connect a different wallet.",
+                "No reserved allocation — The connected wallet doesn’t have a reserved spot for this sale. Connect a different wallet."
             );
         case PrePurchaseFailureReason.SALE_NOT_ACTIVE:
             return errorConfig("The sale is not currently active.");
@@ -56,14 +56,20 @@ function readinessConfig(
 }
 
 function ReadyToPurchasePanel({
-    entityID,
+    walletAddress,
     generatePurchasePermit,
 }: {
-    entityID: `0x${string}`;
+    walletAddress: `0x${string}`;
     generatePurchasePermit: () => Promise<GeneratePurchasePermitResponse>;
 }) {
-    const { commitWithPermit, amountInContract, awaitingTxReceipt, txReceipt, awaitingTxReceiptError } =
-        useSaleContract(entityID);
+    const {
+        commitWithPermit,
+        amountInContract,
+        amountInContractError,
+        awaitingTxReceipt,
+        txReceipt,
+        awaitingTxReceiptError,
+    } = useSaleContract(walletAddress);
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<Error | undefined>(undefined);
@@ -107,24 +113,20 @@ function ReadyToPurchasePanel({
             </div>
 
             <div className="bg-white p-2 rounded-md w-fit">
-                <p className="text-gray-900">
-                    Current amount in contract:{" "}
-                    {amountInContract ? `${Number(amountInContract.amount) / 1e6}` : "Loading..."}
-                </p>
+                {amountInContractError ? (
+                    <p className="text-red-500 wrap-anywhere">{amountInContractError.message}</p>
+                ) : (
+                    <p className="text-gray-900">
+                        Current amount in contract:{" "}
+                        {amountInContract !== undefined ? `${Number(amountInContract) / 1e6}` : "Loading..."}
+                    </p>
+                )}
             </div>
         </div>
     );
 }
 
-function PurchasePanel({
-    entityUUID,
-    entityID,
-    walletAddress,
-}: {
-    entityUUID: string;
-    entityID: `0x${string}`;
-    walletAddress: `0x${string}`;
-}) {
+function PurchasePanel({ entityUUID, walletAddress }: { entityUUID: string; walletAddress: `0x${string}` }) {
     const sonarPurchaser = useSonarPurchase({
         saleUUID,
         entityUUID,
@@ -152,7 +154,7 @@ function PurchasePanel({
 
                 {sonarPurchaser.readyToPurchase && (
                     <ReadyToPurchasePanel
-                        entityID={entityID}
+                        walletAddress={walletAddress}
                         generatePurchasePermit={sonarPurchaser.generatePurchasePermit}
                     />
                 )}

@@ -13,4 +13,4 @@ export const saleUUID = process.env.REACT_APP_SALE_UUID ?? "c3e73992-d3d3-4c83-8
 
 export const sonarHomeURL = new URL(`/sonar/${saleUUID}/home`, sonarConfig.frontendURL ?? "https://app.echo.xyz");
 
-export const saleContract = "0x296609c8631992C540CD418bF71E1089cDD6A651";
+export const saleContract = "0x792bd4D03C5025fbE8e91F5498aB30973eC8d5E9";
