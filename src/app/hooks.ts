@@ -1,18 +1,23 @@
 import { GeneratePurchasePermitResponse, Hex } from "@echoxyz/sonar-core";
 import { useCallback, useEffect, useState } from "react";
-import {
-  useReadContract,
-  useWriteContract,
-  useWaitForTransactionReceipt,
-} from "wagmi";
+import { ethers } from "ethers";
 import { saleContract } from "./config";
 import { saleABI } from "./SaleABI";
-import { useConfig, type UseWaitForTransactionReceiptReturnType  } from "wagmi";
-import { simulateContract } from "wagmi/actions";
+
+// Extend Window interface to include ethereum
+declare global {
+  interface Window {
+    ethereum?: {
+      request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
+      on: (event: string, callback: (...args: unknown[]) => void) => void;
+      removeListener: (event: string, callback: (...args: unknown[]) => void) => void;
+    };
+  }
+}
 
 export type UseSaleContractResult = {
   awaitingTxReceipt: boolean;
-  txReceipt?: UseWaitForTransactionReceiptReturnType;
+  txReceipt?: ethers.TransactionReceipt | null;
   awaitingTxReceiptError?: Error;
   commitWithPermit: (args: {
     purchasePermitResp: GeneratePurchasePermitResponse;
@@ -21,18 +26,15 @@ export type UseSaleContractResult = {
 };
 
 export const useSaleContract = (entityID: `0x${string}`) => {
-  const { writeContractAsync } = useWriteContract();
-  const config = useConfig();
-
   const [txHash, setTxHash] = useState<`0x${string}` | undefined>(undefined);
-
-  const {
-    data: txReceipt,
-    isFetching: awaitingTxReceipt,
-    error: awaitingTxReceiptError,
-  } = useWaitForTransactionReceipt({
-    hash: txHash,
-  });
+  const [txReceipt, setTxReceipt] = useState<ethers.TransactionReceipt | null>(null);
+  const [awaitingTxReceipt, setAwaitingTxReceipt] = useState(false);
+  const [awaitingTxReceiptError, setAwaitingTxReceiptError] = useState<Error | undefined>(undefined);
+  const [amountInContract, setAmountInContract] = useState<{
+    addr: string;
+    entityID: string;
+    amount: bigint;
+  } | null>(null);
 
   const commitWithPermit = useCallback(
     async ({
@@ -47,11 +49,18 @@ export const useSaleContract = (entityID: `0x${string}`) => {
         throw new Error("Invalid purchase permit response");
       }
 
-      const { request } = await simulateContract(config, {
-        address: saleContract,
-        abi: saleABI,
-        functionName: "purchase",
-        args: [
+      try {
+        // Get provider and signer from window.ethereum
+        if (!window.ethereum) {
+          throw new Error("No wallet found");
+        }
+
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+        const contract = new ethers.Contract(saleContract, saleABI, signer);
+
+        // Prepare the transaction data
+        const args = [
           amount,
           {
             permit: {
@@ -72,30 +81,60 @@ export const useSaleContract = (entityID: `0x${string}`) => {
             maxAmount: BigInt(purchasePermitResp.PermitJSON.MaxAmount),
           },
           base64ToHex(purchasePermitResp.Signature),
-        ] as const,
-      });
+        ];
 
-      setTxHash(
-        await writeContractAsync(request, {
-          onError: (error: Error) => {
-            throw error;
-          },
-        })
-      );
+        // Estimate gas first (similar to simulateContract)
+        const gasEstimate = await contract.purchase.estimateGas(...args);
+        
+        // Send the transaction
+        const tx = await contract.purchase(...args, {
+          gasLimit: gasEstimate,
+        });
+
+        setTxHash(tx.hash as `0x${string}`);
+        setAwaitingTxReceipt(true);
+        setAwaitingTxReceiptError(undefined);
+
+        // Wait for transaction receipt
+        const receipt = await tx.wait();
+        setTxReceipt(receipt);
+        setAwaitingTxReceipt(false);
+
+        return tx.hash;
+      } catch (error) {
+        setAwaitingTxReceipt(false);
+        setAwaitingTxReceiptError(error as Error);
+        throw error;
+      }
     },
-    [writeContractAsync, config]
+    []
   );
 
-  const { data: amountInContract, refetch: refetchAmountInContract } =
-    useReadContract({
-      address: saleContract,
-      abi: saleABI,
-      functionName: "entityStateByID",
-      args: [entityID],
-    });
+  // Function to fetch amount in contract
+  const refetchAmountInContract = useCallback(async () => {
+    try {
+      if (!window.ethereum) {
+        console.warn("No wallet found for reading contract");
+        return;
+      }
 
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const contract = new ethers.Contract(saleContract, saleABI, provider);
+      const result = await contract.entityStateByID(entityID);
+      setAmountInContract(result);
+    } catch (error) {
+      console.error("Error fetching contract data:", error);
+    }
+  }, [entityID]);
+
+  // Fetch initial data
   useEffect(() => {
-    if (txReceipt?.status === "success") {
+    refetchAmountInContract();
+  }, [refetchAmountInContract]);
+
+  // Refetch when transaction is successful
+  useEffect(() => {
+    if (txReceipt?.status === 1) { // 1 = success in ethers.js
       refetchAmountInContract();
     }
   }, [txReceipt?.status, refetchAmountInContract]);
@@ -106,6 +145,7 @@ export const useSaleContract = (entityID: `0x${string}`) => {
     awaitingTxReceipt,
     txReceipt,
     awaitingTxReceiptError,
+    txHash,
   };
 };
 

@@ -111,12 +111,12 @@ function ReadyToPurchasePanel({
         {awaitingTxReceipt && !txReceipt && (
           <p className="text-gray-900">Waiting for transaction receipt...</p>
         )}
-        {txReceipt?.status === "success" && (
+        {/* {txReceipt?. === "success" && (
           <p className="text-green-500">Purchase successful</p>
         )}
         {txReceipt?.status === "reverted" && (
           <p className="text-red-500">Purchase reverted</p>
-        )}
+        )} */}
         {error && <p className="text-red-500 wrap-anywhere">{error.message}</p>}
         {awaitingTxReceiptError && <p className="text-red-500 wrap-anywhere">{awaitingTxReceiptError.message}</p>}
       </div>
