@@ -58,7 +58,7 @@ export default function OAuthCallback() {
                 <div className="text-center">
                     <h2 className="text-xl font-semibold text-red-600 mb-2">Timed out</h2>
                     <button
-                        onClick={() => window.location.href = "/"}
+                        onClick={() => (window.location.href = "/")}
                         className="mt-4 px-4 py-2 bg-gray-50 text-gray-900 rounded-xl cursor-pointer"
                     >
                         Return to Login
@@ -74,7 +74,7 @@ export default function OAuthCallback() {
                 <div className="text-center">
                     <h2 className="text-xl font-semibold text-red-600 mb-2">{oauthError}</h2>
                     <button
-                        onClick={() => window.location.href = "/"}
+                        onClick={() => (window.location.href = "/")}
                         className="mt-4 px-4 py-2 bg-gray-50 text-gray-900 rounded-xl cursor-pointer"
                     >
                         Return to Login
