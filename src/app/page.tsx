@@ -6,7 +6,7 @@ import { saleUUID, sonarHomeURL } from "./config";
 import SonarEntity from "./SonarEntity";
 import { useAccount } from "wagmi";
 import PurchasePanel from "./PurchasePanel";
-import { EntityDetails } from "@echoxyz/sonar-core";
+import { EntityDetails, SaleEligibility } from "@echoxyz/sonar-core";
 
 const SonarAuthButton = ({
     authenticated,
@@ -54,12 +54,8 @@ export default function Home() {
                 authenticated={authenticated}
                 walletAddress={address}
             />
-            {entity && address && (
-                <PurchasePanel
-                    entityUUID={entity.EntityUUID}
-                    entityID={entity.ObfuscatedEntityID}
-                    walletAddress={address}
-                />
+            {entity && address && entity.SaleEligibility === SaleEligibility.ELIGIBLE && (
+                <PurchasePanel entityUUID={entity.EntityUUID} walletAddress={address} />
             )}
         </div>
     );

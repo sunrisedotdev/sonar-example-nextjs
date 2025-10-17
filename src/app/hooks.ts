@@ -2,18 +2,11 @@ import { GeneratePurchasePermitResponse, Hex } from "@echoxyz/sonar-core";
 import { useCallback, useEffect, useState } from "react";
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { saleContract } from "./config";
-import { saleABI } from "./SaleABI";
-import { useConfig, type UseWaitForTransactionReceiptReturnType } from "wagmi";
+import { examplSaleABI } from "./ExampleSaleABI";
+import { useConfig } from "wagmi";
 import { simulateContract } from "wagmi/actions";
 
-export type UseSaleContractResult = {
-    awaitingTxReceipt: boolean;
-    txReceipt?: UseWaitForTransactionReceiptReturnType;
-    awaitingTxReceiptError?: Error;
-    commitWithPermit: (args: { purchasePermitResp: GeneratePurchasePermitResponse; amount: bigint }) => Promise<string>;
-};
-
-export const useSaleContract = (entityID: `0x${string}`) => {
+export const useSaleContract = (walletAddress: `0x${string}`) => {
     const { writeContractAsync } = useWriteContract();
     const config = useConfig();
 
@@ -42,7 +35,7 @@ export const useSaleContract = (entityID: `0x${string}`) => {
 
             const { request } = await simulateContract(config, {
                 address: saleContract,
-                abi: saleABI,
+                abi: examplSaleABI,
                 functionName: "purchase",
                 args: [
                     amount,
@@ -67,17 +60,21 @@ export const useSaleContract = (entityID: `0x${string}`) => {
                     onError: (error: Error) => {
                         throw error;
                     },
-                }),
+                })
             );
         },
-        [writeContractAsync, config],
+        [writeContractAsync, config]
     );
 
-    const { data: amountInContract, refetch: refetchAmountInContract } = useReadContract({
+    const {
+        data: amountInContract,
+        refetch: refetchAmountInContract,
+        error: amountInContractError,
+    } = useReadContract({
         address: saleContract,
-        abi: saleABI,
-        functionName: "entityStateByID",
-        args: [entityID],
+        abi: examplSaleABI,
+        functionName: "amountByAddress",
+        args: [walletAddress],
     });
 
     useEffect(() => {
@@ -87,8 +84,9 @@ export const useSaleContract = (entityID: `0x${string}`) => {
     }, [txReceipt?.status, refetchAmountInContract]);
 
     return {
-        commitWithPermit,
         amountInContract,
+        amountInContractError,
+        commitWithPermit,
         awaitingTxReceipt,
         txReceipt,
         awaitingTxReceiptError,
