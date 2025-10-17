@@ -1,20 +1,17 @@
 "use client";
 
 import { WagmiProvider, createConfig, http } from "wagmi";
-import { base, baseSepolia, mainnet, sepolia } from "wagmi/chains";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ConnectKitProvider, getDefaultConfig } from "connectkit";
 import { SonarProvider } from "@echoxyz/sonar-react";
 import { sonarConfig } from "./config";
+import { sepolia } from "wagmi/chains";
 
 const config = createConfig(
   getDefaultConfig({
-    chains: [mainnet, sepolia, base, baseSepolia],
+    chains: [sepolia],
     transports: {
-      [mainnet.id]: http(),
       [sepolia.id]: http(),
-      [base.id]: http(),
-      [baseSepolia.id]: http(),
     },
 
     // Required API Keys
@@ -22,12 +19,8 @@ const config = createConfig(
       process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ?? "",
 
     // Required App Info
-    appName: "Your App Name",
-
-    // Optional App Info
-    appDescription: "Your App Description",
-    appUrl: "https://family.co", // your app's url
-    appIcon: "https://family.co/logo.png", // your app's icon, no bigger than 1024x1024px (max. 1MB)
+    appName: "Sonar Next.js example app",
+    appDescription: "Next.js app showing how to integrate with the Sonar API via the sonar-react and sonar-core libraries.",
   })
 );
 
