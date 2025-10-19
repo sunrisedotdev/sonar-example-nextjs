@@ -55,7 +55,7 @@ export default function Home() {
                 walletAddress={address}
             />
             {entity && address && entity.SaleEligibility === SaleEligibility.ELIGIBLE && (
-                <PurchasePanel entityUUID={entity.EntityUUID} walletAddress={address} />
+                <PurchasePanel entityID={entity.EntityID} walletAddress={address} />
             )}
         </div>
     );
@@ -98,5 +98,5 @@ const SonarEntityPanel = ({
         );
     }
 
-    return <SonarEntity key={entity?.EntityUUID} value={entity} />;
+    return <SonarEntity key={entity?.EntityID} value={entity} />;
 };
