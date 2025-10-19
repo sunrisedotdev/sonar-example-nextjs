@@ -127,8 +127,6 @@ function ReadyToPurchasePanel({
 }
 
 function PurchasePanel({ entityID, walletAddress }: { entityID: `0x${string}`; walletAddress: `0x${string}` }) {
-    console.log("entityID", entityID);
-
     const sonarPurchaser = useSonarPurchase({
         saleUUID,
         entityID,
