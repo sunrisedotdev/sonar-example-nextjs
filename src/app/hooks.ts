@@ -28,33 +28,30 @@ export const useSaleContract = (walletAddress: `0x${string}`) => {
             purchasePermitResp: GeneratePurchasePermitResponse;
             amount: bigint;
         }) => {
-            // TODO: In the future, could also show an example of basic permits without per-entity allocations
-            if (!("Permit" in purchasePermitResp.PermitJSON)) {
+            if (!("MinPrice" in purchasePermitResp.PermitJSON)) {
                 throw new Error("Invalid purchase permit response");
             }
+            const permit = purchasePermitResp.PermitJSON;
 
             const { request } = await simulateContract(config, {
-              address: saleContract,
-              abi: examplSaleABI,
-              functionName: "purchase",
-              args: [
-                amount,
-                {
-                  permit: {
-                    entityID: purchasePermitResp.PermitJSON.Permit.EntityID,
-                    saleUUID: purchasePermitResp.PermitJSON.Permit.SaleUUID,
-                    wallet: purchasePermitResp.PermitJSON.Permit.Wallet,
-                    expiresAt: BigInt(purchasePermitResp.PermitJSON.Permit.ExpiresAt),
-                    payload: purchasePermitResp.PermitJSON.Permit.Payload,
-                  },
-                  reservedAmount: BigInt(
-                    purchasePermitResp.PermitJSON.ReservedAmount
-                  ),
-                  minAmount: BigInt(purchasePermitResp.PermitJSON.MinAmount),
-                  maxAmount: BigInt(purchasePermitResp.PermitJSON.MaxAmount),
-                },
-                purchasePermitResp.Signature,
-              ] as const,
+                address: saleContract,
+                abi: examplSaleABI,
+                functionName: "purchase",
+                args: [
+                    amount,
+                    {
+                        entityID: permit.EntityID,
+                        saleUUID: permit.SaleUUID,
+                        wallet: permit.Wallet,
+                        expiresAt: BigInt(permit.ExpiresAt),
+                        minAmount: BigInt(permit.MinAmount),
+                        maxAmount: BigInt(permit.MaxAmount),
+                        minPrice: BigInt(permit.MinPrice),
+                        maxPrice: BigInt(permit.MaxPrice),
+                        payload: permit.Payload,
+                    },
+                    purchasePermitResp.Signature,
+                ] as const,
             });
 
             setTxHash(
