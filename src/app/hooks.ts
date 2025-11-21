@@ -1,4 +1,4 @@
-import { GeneratePurchasePermitResponse } from "@echoxyz/sonar-core";
+import { BasicPermitV2, GeneratePurchasePermitResponse } from "@echoxyz/sonar-core";
 import { useCallback, useEffect, useState } from "react";
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { saleContract } from "./config";
@@ -28,10 +28,10 @@ export const useSaleContract = (walletAddress: `0x${string}`) => {
             purchasePermitResp: GeneratePurchasePermitResponse;
             amount: bigint;
         }) => {
-            if (!("MinPrice" in purchasePermitResp.PermitJSON)) {
+            if (!("MinAmount" in purchasePermitResp.PermitJSON)) {
                 throw new Error("Invalid purchase permit response");
             }
-            const permit = purchasePermitResp.PermitJSON;
+            const permit = purchasePermitResp.PermitJSON as BasicPermitV2;
 
             const { request } = await simulateContract(config, {
                 address: saleContract,
