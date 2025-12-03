@@ -40,7 +40,7 @@ export const useSaleContract = (walletAddress: `0x${string}`) => {
                 args: [
                     amount,
                     {
-                        entityID: permit.EntityID,
+                        entityID: permit.SaleSpecificEntityID,
                         saleUUID: permit.SaleUUID,
                         wallet: permit.Wallet,
                         expiresAt: BigInt(permit.ExpiresAt),

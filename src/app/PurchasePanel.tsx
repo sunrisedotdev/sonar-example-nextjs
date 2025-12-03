@@ -1,6 +1,6 @@
 "use client";
 
-import { PrePurchaseFailureReason, GeneratePurchasePermitResponse } from "@echoxyz/sonar-core";
+import { PrePurchaseFailureReason, GeneratePurchasePermitResponse, EntityID } from "@echoxyz/sonar-core";
 import { useState } from "react";
 import { saleUUID } from "./config";
 import {
@@ -126,7 +126,7 @@ function ReadyToPurchasePanel({
     );
 }
 
-function PurchasePanel({ entityID, walletAddress }: { entityID: `0x${string}`; walletAddress: `0x${string}` }) {
+function PurchasePanel({ entityID, walletAddress }: { entityID: EntityID; walletAddress: `0x${string}` }) {
     const sonarPurchaser = useSonarPurchase({
         saleUUID,
         entityID,
