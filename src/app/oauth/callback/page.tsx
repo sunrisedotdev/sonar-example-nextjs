@@ -1,93 +1,79 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useSonarAuth } from "@echoxyz/sonar-react";
+import { useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
+/**
+ * OAuth callback page - redirects to backend callback handler
+ * This page is kept for backward compatibility with existing OAuth redirect URIs
+ */
 export default function OAuthCallback() {
-    const { authenticated, completeOAuth, ready } = useSonarAuth();
-    const oauthCompletionTriggered = useRef(false);
-    const [oauthError, setOAuthError] = useState<string | null>(null);
-    const [timedOut, setTimedOut] = useState(false);
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const { update } = useSession();
+    const [error, setError] = useState<string | null>(null);
 
-    // complete the oauth flow and exchange the code for an access token
     useEffect(() => {
-        const processOAuthCallback = async () => {
-            const params = new URLSearchParams(window.location.search);
-            const code = params.get("code");
-            const state = params.get("state");
+        const handleCallback = async () => {
+            // Extract query parameters
+            const code = searchParams.get("code");
+            const state = searchParams.get("state");
+            const oauthError = searchParams.get("error");
 
-            // the user is already authenticated, nothing to do
-            if (!ready || authenticated || !code || !state) {
+            if (oauthError) {
+                setError(`OAuth error: ${oauthError}`);
+                setTimeout(() => router.push("/"), 3000);
                 return;
             }
 
-            // ensuring the oauth completion isn't called multiple times since subsequent ones are expected to fail
-            if (oauthCompletionTriggered.current) {
+            if (!code || !state) {
+                setError("Missing authorization code or state");
+                setTimeout(() => router.push("/"), 3000);
                 return;
             }
-            oauthCompletionTriggered.current = true;
 
             try {
-                await completeOAuth({ code, state });
+                // Call backend callback handler
+                const response = await fetch(`/api/auth/sonar/callback?code=${code}&state=${state}`);
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+                    setError(errorData.error || "Failed to complete OAuth flow");
+                    setTimeout(() => router.push("/"), 3000);
+                    return;
+                }
+
+                // Success - refresh NextAuth session to pick up new tokens
+                // The update() call triggers a new session fetch, which runs the session callback
+                // The session callback checks the token store and updates sonarConnected
+                await update(); // Force NextAuth to refresh the session (triggers session callback server-side)
+                
+                // Navigate to home - the session should now be updated
+                router.push("/");
             } catch (err) {
-                setOAuthError(err instanceof Error ? err.message : null);
+                setError("Failed to process OAuth callback");
+                setTimeout(() => router.push("/"), 3000);
             }
         };
 
-        processOAuthCallback();
-    }, [authenticated, completeOAuth, ready]);
-
-    // fetch the user's available entities after they've been authenticated
-    useEffect(() => {
-        if (!ready || !authenticated) {
-            return;
-        }
-        window.location.href = "/";
-    }, [authenticated, ready]);
-
-    // set a timeout, so we don't keep the user waiting indefinitely in case of an unexpected issue
-    useEffect(() => {
-        setTimedOut(false);
-        const timeoutId = setTimeout(() => setTimedOut(true), 20000);
-        return () => clearTimeout(timeoutId);
-    }, [setTimedOut]);
-
-    if (timedOut) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-center">
-                    <h2 className="text-xl font-semibold text-red-600 mb-2">Timed out</h2>
-                    <button
-                        onClick={() => (window.location.href = "/")}
-                        className="mt-4 px-4 py-2 bg-gray-50 text-gray-900 rounded-xl cursor-pointer"
-                    >
-                        Return to Login
-                    </button>
-                </div>
-            </div>
-        );
-    }
-
-    if (oauthError) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-center">
-                    <h2 className="text-xl font-semibold text-red-600 mb-2">{oauthError}</h2>
-                    <button
-                        onClick={() => (window.location.href = "/")}
-                        className="mt-4 px-4 py-2 bg-gray-50 text-gray-900 rounded-xl cursor-pointer"
-                    >
-                        Return to Login
-                    </button>
-                </div>
-            </div>
-        );
-    }
+        handleCallback();
+    }, [searchParams, router, update]);
 
     return (
         <div className="min-h-screen flex items-center justify-center">
             <div className="text-center">
-                <h2 className="text-xl font-semibold mb-4 text-white">Connecting to Echo</h2>
+                {error ? (
+                    <>
+                        <h2 className="text-xl font-semibold text-red-600 mb-2">Error</h2>
+                        <p className="text-gray-400 mb-4">{error}</p>
+                        <p className="text-sm text-gray-500">Redirecting to home...</p>
+                    </>
+                ) : (
+                    <>
+                        <h2 className="text-xl font-semibold mb-4 text-white">Connecting to Sonar...</h2>
+                    </>
+                )}
             </div>
         </div>
     );
