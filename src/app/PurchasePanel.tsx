@@ -1,14 +1,14 @@
 "use client";
 
-import { PrePurchaseFailureReason, GeneratePurchasePermitResponse, EntityID } from "@echoxyz/sonar-core";
+import { EntityID, GeneratePurchasePermitResponse, PrePurchaseFailureReason } from "@echoxyz/sonar-core";
 import { useState } from "react";
 import { saleUUID } from "./config";
+import { useSaleContract } from "./hooks";
 import {
     useSonarPurchase,
     UseSonarPurchaseResultNotReadyToPurchase,
     UseSonarPurchaseResultReadyToPurchase,
-} from "@echoxyz/sonar-react";
-import { useSaleContract } from "./hooks";
+} from "./hooks/use-sonar-purchase";
 
 function readinessConfig(
     sonarPurchaser: UseSonarPurchaseResultReadyToPurchase | UseSonarPurchaseResultNotReadyToPurchase
