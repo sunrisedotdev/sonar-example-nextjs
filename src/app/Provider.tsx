@@ -3,8 +3,7 @@
 import { WagmiProvider, createConfig, http } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ConnectKitProvider, getDefaultConfig } from "connectkit";
-import { SonarProvider } from "@echoxyz/sonar-react";
-import { sonarConfig } from "./config";
+import { SessionProvider } from "next-auth/react";
 import { sepolia } from "wagmi/chains";
 
 const config = createConfig(
@@ -20,20 +19,20 @@ const config = createConfig(
     // Required App Info
     appName: "Sonar Next.js example app",
     appDescription:
-      "Next.js app showing how to integrate with the Sonar API via the sonar-react and sonar-core libraries.",
-  })
+      "Next.js app showing how to integrate with the Sonar API via backend OAuth and NextAuth.",
+  }),
 );
 
 const queryClient = new QueryClient();
 
 export const Provider = ({ children }: { children: React.ReactNode }) => {
   return (
-    <SonarProvider config={sonarConfig}>
+    <SessionProvider>
       <WagmiProvider config={config}>
         <QueryClientProvider client={queryClient}>
           <ConnectKitProvider>{children}</ConnectKitProvider>
         </QueryClientProvider>
       </WagmiProvider>
-    </SonarProvider>
+    </SessionProvider>
   );
 };
