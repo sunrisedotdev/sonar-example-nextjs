@@ -42,7 +42,15 @@ export default function OAuthCallback() {
         if (!ready || !authenticated) {
             return;
         }
-        window.location.href = "/";
+
+        // Redirect to the stored return path, or default to home
+        const returnPath = localStorage.getItem("sonar_oauth_return_path");
+        if (returnPath) {
+            localStorage.removeItem("sonar_oauth_return_path");
+            window.location.href = returnPath;
+        } else {
+            window.location.href = "/";
+        }
     }, [authenticated, ready]);
 
     // set a timeout, so we don't keep the user waiting indefinitely in case of an unexpected issue
