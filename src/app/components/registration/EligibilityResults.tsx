@@ -20,10 +20,10 @@ export function EligibilityResults({
   }
 
   return (
-    <div className="mt-6 p-6 bg-linear-to-r from-indigo-50 to-blue-50 rounded-lg border border-indigo-200">
+    <div className="p-4 bg-linear-to-r from-indigo-50 to-blue-50 rounded-lg border border-indigo-200">
       {hasEligibleEntity ? (
         <div>
-          <p className="text-green-700 font-medium text-lg mb-2">
+          <p className="text-green-600 font-medium text-lg">
             ✓ You have {eligibleEntities.length} eligible{" "}
             {eligibleEntities.length === 1 ? "entity" : "entities"}!
           </p>
@@ -33,10 +33,10 @@ export function EligibilityResults({
         </div>
       ) : (
         <div>
-          <p className="text-yellow-700 font-medium text-lg mb-2">
+          <p className="text-yellow-700 font-medium text-lg">
             No eligible entities found
           </p>
-          <p className="text-gray-700 mb-4">
+          <p className="text-gray-700">
             Your entities are not eligible for this sale, or you need to
             complete your setup.
           </p>

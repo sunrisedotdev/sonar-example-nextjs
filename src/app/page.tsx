@@ -5,11 +5,10 @@ import { ConnectKitButton } from "connectkit";
 import { useSonarAuth, useSonarEntity, useSonarEntities } from "@echoxyz/sonar-react";
 import { saleUUID, sonarHomeURL, sonarConfig } from "./config";
 import { useAccount } from "wagmi";
-import PurchasePanel from "./PurchasePanel";
+import PurchaseCard from "./components/sale/PurchaseCard";
 import { SaleEligibility } from "@echoxyz/sonar-core";
-import { SonarAuthButton } from "./components/auth/SonarAuthButton";
 import { AuthenticationSection } from "./components/auth/AuthenticationSection";
-import { EntityPanel } from "./components/sale/EntityPanel";
+import { Entity } from "./components/sale/Entity";
 import { NotEligibleMessage } from "./components/sale/NotEligibleMessage";
 import { EntitiesList } from "./components/registration/EntitiesList";
 import { EligibilityResults } from "./components/registration/EligibilityResults";
@@ -78,34 +77,32 @@ export default function Home() {
 
             {/* Countdown Banner */}
             {!saleIsLive && (
-              <div className="bg-linear-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 mb-6">
+              <div className="bg-linear-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
                 <div className="text-center">
-                  <p className="text-blue-900 font-semibold text-lg mb-2">
+                  <p className="text-blue-900 font-semibold text-lg">
                     Sale Starting Soon
                   </p>
-                  <p className="text-blue-700 mb-4">
+                  <p className="text-blue-700">
                     Register now to ensure you&apos;re ready when the sale goes live
                   </p>
-                  <button
-                    onClick={toggleSaleLive}
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors"
-                  >
-                    🚀 Start Sale (Demo)
-                  </button>
                 </div>
               </div>
             )}
 
             {saleIsLive && (
-              <p className="text-green-700 font-medium mb-4">
-                🎉 The sale is now live! Connect your wallet to participate.
-              </p>
+              <div className="bg-linear-to-r bg-green-50 border border-green-200 rounded-lg p-6">
+                <div className="text-center">
+                  <p className="text-green-700 font-semibold text-lg">
+                    The sale is now live!
+                  </p>
+                </div>
+              </div>
             )}
           </div>
 
           {/* Registration Phase */}
           {!saleIsLive && (
-            <>
+            <div className="flex flex-col gap-8">
               <AuthenticationSection
                 ready={ready}
                 authenticated={authenticated}
@@ -114,8 +111,8 @@ export default function Home() {
               />
 
               {authenticated && (
-                <div className="mb-8">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                <div className="flex flex-col gap-4">
+                  <h2 className="text-xl font-semibold text-gray-900">
                     Check Your Eligibility
                   </h2>
 
@@ -137,31 +134,27 @@ export default function Home() {
                   )}
                 </div>
               )}
-            </>
+            </div>
           )}
 
           {/* Sale Phase */}
           {saleIsLive && (
-            <>
+            <div className="flex flex-col gap-8">
               {/* Connection Buttons */}
-              <div className="flex flex-wrap gap-4 mb-8 justify-center">
-                <div className="transform hover:scale-105 transition-transform">
-                  <ConnectKitButton />
-                </div>
-                <SonarAuthButton
-                  authenticated={authenticated}
-                  login={login}
-                  logout={logout}
-                  variant="indigo"
-                />
-              </div>
+              <AuthenticationSection
+                ready={ready}
+                authenticated={authenticated}
+                login={login}
+                logout={logout}
+              />
 
               {/* Entity Information */}
-              <div className="mb-8">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              <div className="flex flex-col gap-4">
+                <h2 className="text-xl font-semibold text-gray-900">
                   Your Entity Information
                 </h2>
-                <EntityPanel
+                <ConnectKitButton />
+                <Entity
                   loading={entityLoading}
                   entity={entity}
                   error={entityError}
@@ -172,11 +165,11 @@ export default function Home() {
 
               {/* Purchase Panel */}
               {isEligible && address && (
-                <div>
-                  <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                <div className="flex flex-col gap-4">
+                  <h2 className="text-xl font-semibold text-gray-900">
                     Make a Purchase
                   </h2>
-                  <PurchasePanel entityID={entity.EntityID} walletAddress={address} />
+                  <PurchaseCard entityID={entity.EntityID} walletAddress={address} />
                 </div>
               )}
 
@@ -184,7 +177,7 @@ export default function Home() {
               {entity && !isEligible && (
                 <NotEligibleMessage sonarHomeURL={sonarHomeURL.href} />
               )}
-            </>
+            </div>
           )}
         </div>
       </div>

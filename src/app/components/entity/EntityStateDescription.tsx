@@ -23,7 +23,7 @@ export function EntityStateDescription({ entity }: EntityStateDescriptionProps) 
   switch (entity.EntitySetupState as EntitySetupState) {
     case EntitySetupState.NOT_STARTED:
     case EntitySetupState.IN_PROGRESS:
-      stateFgColor = "text-amber-500";
+      stateFgColor = "text-amber-600";
       stateBgColor = "bg-amber-50";
       stateDescription = "You need to complete entity setup on Sonar";
       break;
@@ -46,8 +46,8 @@ export function EntityStateDescription({ entity }: EntityStateDescriptionProps) 
     case EntitySetupState.COMPLETE:
       switch (entity.SaleEligibility as SaleEligibility) {
         case SaleEligibility.ELIGIBLE:
-          stateFgColor = "text-green-500";
-          stateBgColor = "bg-green-50";
+          stateFgColor = "text-green-800";
+          stateBgColor = "bg-green-200";
           stateDescription = "You are eligible to invest in this sale";
           break;
         case SaleEligibility.NOT_ELIGIBLE:

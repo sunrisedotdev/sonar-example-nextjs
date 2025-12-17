@@ -26,12 +26,12 @@ export function AuthenticationSection({
   };
 
   return (
-    <div className="mb-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
+    <div className="p-6 bg-blue-50 rounded-lg border border-blue-200">
       {!ready ? (
         <p className="text-gray-600">Loading authentication...</p>
       ) : !authenticated ? (
         <div>
-          <p className="text-gray-600 mb-4">
+          <p className="text-gray-600">
             Connect your Sonar account to check your eligibility status.
           </p>
           <button
@@ -42,7 +42,7 @@ export function AuthenticationSection({
           </button>
         </div>
       ) : (
-        <div className="flex flex-row gap-2  justify-between items-center">
+        <div className="flex flex-row gap-2 justify-between items-center">
           <p className="text-green-600 font-medium">✓ Sonar Connected</p>
           <button
             onClick={logout}

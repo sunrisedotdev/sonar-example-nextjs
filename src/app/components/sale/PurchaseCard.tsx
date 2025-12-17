@@ -2,20 +2,20 @@
 
 import { PrePurchaseFailureReason, GeneratePurchasePermitResponse, EntityID } from "@echoxyz/sonar-core";
 import { useState } from "react";
-import { saleUUID } from "./config";
+import { saleUUID } from "../../config";
 import {
     useSonarPurchase,
     UseSonarPurchaseResultNotReadyToPurchase,
     UseSonarPurchaseResultReadyToPurchase,
 } from "@echoxyz/sonar-react";
-import { useSaleContract } from "./hooks";
+import { useSaleContract } from "../../hooks";
 
 function readinessConfig(
     sonarPurchaser: UseSonarPurchaseResultReadyToPurchase | UseSonarPurchaseResultNotReadyToPurchase
 ) {
     const okConfig = (msg: string) => ({
-        fgCol: "text-green-500",
-        bgCol: "bg-green-50",
+        fgCol: "text-green-800",
+        bgCol: "bg-green-200",
         description: msg,
     });
 
@@ -55,7 +55,7 @@ function readinessConfig(
     }
 }
 
-function ReadyToPurchasePanel({
+function ReadyToPurchaseSection({
     walletAddress,
     generatePurchasePermit,
 }: {
@@ -93,11 +93,11 @@ function ReadyToPurchasePanel({
 
     // TODO: could fetch and show the user their allocation
     return (
-        <div className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2 items-center">
+        <div className="flex flex-col gap-4 items-center">
+            <div className="flex flex-col gap-2">
                 <button
                     disabled={loading || awaitingTxReceipt}
-                    className="cursor-pointer bg-gray-900 rounded-xl px-4 py-2 w-fit"
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors"
                     onClick={purchase}
                 >
                     <p className="text-gray-100">{loading || awaitingTxReceipt ? "Loading..." : "Purchase 100"}</p>
@@ -126,7 +126,7 @@ function ReadyToPurchasePanel({
     );
 }
 
-function PurchasePanel({ entityID, walletAddress }: { entityID: EntityID; walletAddress: `0x${string}` }) {
+function PurchaseCard({ entityID, walletAddress }: { entityID: EntityID; walletAddress: `0x${string}` }) {
     const sonarPurchaser = useSonarPurchase({
         saleUUID,
         entityID,
@@ -144,35 +144,31 @@ function PurchasePanel({ entityID, walletAddress }: { entityID: EntityID; wallet
     const readinessCfg = readinessConfig(sonarPurchaser);
 
     return (
-        <div className="flex flex-col gap-8 bg-gray-100 p-4 rounded-xl w-full">
-            <div className="flex flex-col gap-2 items-center">
-                <h1 className="text-lg font-bold text-gray-900 w-full">Purchase</h1>
-
-                <div className={`${readinessCfg.bgCol} p-2 rounded-md w-full`}>
-                    <p className={`${readinessCfg.fgCol} w-full`}>{readinessCfg.description}</p>
-                </div>
-
-                {sonarPurchaser.readyToPurchase && (
-                    <ReadyToPurchasePanel
-                        walletAddress={walletAddress}
-                        generatePurchasePermit={sonarPurchaser.generatePurchasePermit}
-                    />
-                )}
-
-                {!sonarPurchaser.readyToPurchase &&
-                    sonarPurchaser.failureReason === PrePurchaseFailureReason.REQUIRES_LIVENESS && (
-                        <button
-                            className="cursor-pointer bg-gray-900 rounded-xl px-4 py-2 w-fit"
-                            onClick={() => {
-                                window.open(sonarPurchaser.livenessCheckURL, "_blank");
-                            }}
-                        >
-                            <p className="text-gray-100">Complete liveness check to purchase</p>
-                        </button>
-                    )}
+        <div className="flex flex-col gap-4 p-4 bg-linear-to-r from-indigo-50 to-blue-50 rounded-lg border border-indigo-200">
+            <div className={`${readinessCfg.bgCol} p-2 rounded-md w-full`}>
+                <p className={`${readinessCfg.fgCol} w-full`}>{readinessCfg.description}</p>
             </div>
+
+            {sonarPurchaser.readyToPurchase && (
+                <ReadyToPurchaseSection
+                    walletAddress={walletAddress}
+                    generatePurchasePermit={sonarPurchaser.generatePurchasePermit}
+                />
+            )}
+
+            {!sonarPurchaser.readyToPurchase &&
+                sonarPurchaser.failureReason === PrePurchaseFailureReason.REQUIRES_LIVENESS && (
+                    <button
+                        className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors w-fit"
+                        onClick={() => {
+                            window.open(sonarPurchaser.livenessCheckURL, "_blank");
+                        }}
+                    >
+                        <p className="text-gray-100">Complete liveness check to purchase</p>
+                    </button>
+                )}
         </div>
     );
 }
 
-export default PurchasePanel;
+export default PurchaseCard;
