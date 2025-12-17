@@ -61,7 +61,7 @@ export default function Home() {
   return (
     <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-lg shadow-xl p-8">
+        <div className="bg-white rounded-lg shadow-xl p-8 w-[620px]">
           {/* Header with Status Toggle */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4 flex-wrap gap-4">

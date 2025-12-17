@@ -1,5 +1,6 @@
 import { EntityDetails } from "@echoxyz/sonar-core";
 import { EntityCard } from "../entity/EntityCard";
+import { sonarConfig } from "@/app/config";
 
 interface EntitiesListProps {
   loading: boolean;
@@ -42,10 +43,24 @@ export function EntitiesList({ loading, error, entities, saleUUID, sonarFrontend
   }
 
   return (
-    <div className="space-y-4">
-      {entities.map((entity) => (
-        <EntityCard key={entity.EntityID} entity={entity} />
-      ))}
+    <div className="flex flex-col gap-2">
+      <p className="text-gray-700 text-sm">
+        You can manage and add entities on{" "}
+        <a
+          href={`${sonarConfig.frontendURL}/sonar/${saleUUID}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 hover:text-blue-800 underline"
+        >
+          Sonar
+        </a>
+        .
+      </p>
+      <div className="flex flex-col gap-4">
+        {entities.map((entity) => (
+          <EntityCard key={entity.EntityID} entity={entity} />
+        ))}
+      </div>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { EntityDetails } from "@echoxyz/sonar-core";
-import { sonarConfig } from "@/app/config";
+import { saleUUID, sonarConfig } from "@/app/config";
 import { EntityCard } from "../entity/EntityCard";
 
 interface EntityProps {
@@ -60,5 +60,21 @@ export function Entity({ loading, entity, error, authenticated, walletAddress }:
     );
   }
 
-  return <EntityCard entity={entity} />;
+  return (
+    <div className="flex flex-col gap-2 w-full">
+      <EntityCard entity={entity} />
+      <p className="text-gray-700 text-sm">
+        You can use a different entity by connecting a wallet that is linked to a different entity on{" "}
+        <a
+          href={`${sonarConfig.frontendURL}/sonar/${saleUUID}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 hover:text-blue-800 underline"
+        >
+          Sonar
+        </a>
+        .
+      </p>
+    </div>
+  );
 }
