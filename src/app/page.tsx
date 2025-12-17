@@ -59,107 +59,116 @@ export default function Home() {
   const isEligible = entity && entity.SaleEligibility === SaleEligibility.ELIGIBLE;
 
   return (
-    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-lg shadow-xl p-8 w-[620px]">
-          {/* Header with Status Toggle */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
-              <h1 className="text-3xl font-bold text-gray-900">Easy Company Token Sale</h1>
-              <button
-                onClick={toggleSaleLive}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  saleIsLive
-                    ? "bg-green-100 text-green-800 hover:bg-green-200"
-                    : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                }`}
-              >
-                {saleIsLive ? "🟢 Sale Live" : "⏳ Pre-Sale"}
-              </button>
+    <>
+      {/* Fixed Demo Control Bar */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-gray-900 border-b border-gray-700 shadow-lg">
+        <div className="max-w-4xl mx-auto px-4 py-2 flex items-center justify-between">
+          <span className="text-gray-400 text-sm font-medium">Demo Controls</span>
+          <button
+            onClick={toggleSaleLive}
+            className={`px-4 py-1.5 rounded-md font-medium text-sm transition-colors ${
+              saleIsLive
+                ? "bg-green-500/20 text-green-400 hover:bg-green-500/30 border border-green-500/50"
+                : "bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 border border-amber-500/50"
+            }`}
+          >
+            {saleIsLive ? "🟢 Sale Live" : "⏳ Pre-Sale"}
+          </button>
+        </div>
+      </div>
+
+      <div className="min-h-screen pt-16 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-lg shadow-xl p-8 w-[620px]">
+            {/* Header */}
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
+                <h1 className="text-3xl font-bold text-gray-900">Easy Company Token Sale</h1>
+              </div>
+
+              {/* Countdown Banner */}
+              {!saleIsLive && (
+                <div className="bg-linear-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
+                  <div className="text-center">
+                    <p className="text-blue-900 font-semibold text-lg">Sale Starting Soon</p>
+                    <p className="text-blue-700">Register now to ensure you&apos;re ready when the sale goes live</p>
+                  </div>
+                </div>
+              )}
+
+              {saleIsLive && (
+                <div className="bg-linear-to-r bg-green-50 border border-green-200 rounded-lg p-6">
+                  <div className="text-center">
+                    <p className="text-green-700 font-semibold text-lg">The sale is now live!</p>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Countdown Banner */}
+            {/* Registration Phase */}
             {!saleIsLive && (
-              <div className="bg-linear-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
-                <div className="text-center">
-                  <p className="text-blue-900 font-semibold text-lg">Sale Starting Soon</p>
-                  <p className="text-blue-700">Register now to ensure you&apos;re ready when the sale goes live</p>
-                </div>
-              </div>
-            )}
+              <div className="flex flex-col gap-8">
+                <AuthenticationSection ready={ready} authenticated={authenticated} login={login} logout={logout} />
 
-            {saleIsLive && (
-              <div className="bg-linear-to-r bg-green-50 border border-green-200 rounded-lg p-6">
-                <div className="text-center">
-                  <p className="text-green-700 font-semibold text-lg">The sale is now live!</p>
-                </div>
-              </div>
-            )}
-          </div>
+                {authenticated && (
+                  <div className="flex flex-col gap-4">
+                    <h2 className="text-xl font-semibold text-gray-900">Check Your Eligibility</h2>
 
-          {/* Registration Phase */}
-          {!saleIsLive && (
-            <div className="flex flex-col gap-8">
-              <AuthenticationSection ready={ready} authenticated={authenticated} login={login} logout={logout} />
-
-              {authenticated && (
-                <div className="flex flex-col gap-4">
-                  <h2 className="text-xl font-semibold text-gray-900">Check Your Eligibility</h2>
-
-                  <EntitiesList
-                    loading={entitiesLoading}
-                    error={entitiesError}
-                    entities={entities}
-                    saleUUID={saleUUID}
-                    sonarFrontendURL={sonarConfig.frontendURL}
-                  />
-
-                  {!entitiesLoading && !entitiesError && entities && (
-                    <EligibilityResults
+                    <EntitiesList
+                      loading={entitiesLoading}
+                      error={entitiesError}
                       entities={entities}
-                      eligibleEntities={eligibleEntities}
                       saleUUID={saleUUID}
                       sonarFrontendURL={sonarConfig.frontendURL}
                     />
-                  )}
-                </div>
-              )}
-            </div>
-          )}
 
-          {/* Sale Phase */}
-          {saleIsLive && (
-            <div className="flex flex-col gap-8">
-              {/* Connection Buttons */}
-              <AuthenticationSection ready={ready} authenticated={authenticated} login={login} logout={logout} />
-
-              {/* Entity Information */}
-              <div className="flex flex-col gap-4">
-                <h2 className="text-xl font-semibold text-gray-900">Your Entity Information</h2>
-                <ConnectKitButton />
-                <Entity
-                  loading={entityLoading}
-                  entity={entity}
-                  error={entityError}
-                  authenticated={authenticated}
-                  walletAddress={address}
-                />
+                    {!entitiesLoading && !entitiesError && entities && (
+                      <EligibilityResults
+                        entities={entities}
+                        eligibleEntities={eligibleEntities}
+                        saleUUID={saleUUID}
+                        sonarFrontendURL={sonarConfig.frontendURL}
+                      />
+                    )}
+                  </div>
+                )}
               </div>
+            )}
 
-              {/* Purchase Panel */}
-              {isEligible && address && (
+            {/* Sale Phase */}
+            {saleIsLive && (
+              <div className="flex flex-col gap-8">
+                {/* Connection Buttons */}
+                <AuthenticationSection ready={ready} authenticated={authenticated} login={login} logout={logout} />
+
+                {/* Entity Information */}
                 <div className="flex flex-col gap-4">
-                  <h2 className="text-xl font-semibold text-gray-900">Make a Purchase</h2>
-                  <PurchaseCard entityID={entity.EntityID} walletAddress={address} />
+                  <h2 className="text-xl font-semibold text-gray-900">Your Entity Information</h2>
+                  <ConnectKitButton />
+                  <Entity
+                    loading={entityLoading}
+                    entity={entity}
+                    error={entityError}
+                    authenticated={authenticated}
+                    walletAddress={address}
+                  />
                 </div>
-              )}
 
-              {/* Not Eligible Message */}
-              {entity && !isEligible && <NotEligibleMessage sonarHomeURL={sonarHomeURL.href} />}
-            </div>
-          )}
+                {/* Purchase Panel */}
+                {isEligible && address && (
+                  <div className="flex flex-col gap-4">
+                    <h2 className="text-xl font-semibold text-gray-900">Make a Purchase</h2>
+                    <PurchaseCard entityID={entity.EntityID} walletAddress={address} />
+                  </div>
+                )}
+
+                {/* Not Eligible Message */}
+                {entity && !isEligible && <NotEligibleMessage sonarHomeURL={sonarHomeURL.href} />}
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
