@@ -10,20 +10,12 @@ interface EntityProps {
   walletAddress?: string;
 }
 
-export function Entity({
-  loading,
-  entity,
-  error,
-  authenticated,
-  walletAddress,
-}: EntityProps) {
+export function Entity({ loading, entity, error, authenticated, walletAddress }: EntityProps) {
   if (!walletAddress || !authenticated) {
     return (
       <div className="flex flex-col gap-2 bg-yellow-50 border border-yellow-200 rounded-lg p-6 w-full">
         <p className="text-yellow-800 font-medium">Connection Required</p>
-        <p className="text-yellow-700">
-          Connect your wallet and Sonar account to continue with your purchase.
-        </p>
+        <p className="text-yellow-700">Connect your wallet and Sonar account to continue with your purchase.</p>
       </div>
     );
   }
@@ -49,20 +41,20 @@ export function Entity({
     return (
       <div className="flex flex-col gap-2 bg-yellow-50 border border-yellow-200 rounded-lg p-6 w-full">
         <div>
-        <p className="text-yellow-800 font-medium">No Entity Found</p>
-        <p className="text-yellow-700">
-          No entity found for this wallet. Please link your wallet on Sonar to continue.
-        </p>
+          <p className="text-yellow-800 font-medium">No Entity Found</p>
+          <p className="text-yellow-700">
+            No entity found for this wallet. Please link your wallet on Sonar to continue.
+          </p>
         </div>
         <div>
-        <a
-          href={sonarConfig.frontendURL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-block bg-yellow-600 hover:bg-yellow-700 text-white font-medium py-2 px-6 rounded-lg transition-colors"
-        >
-          Continue Setup on Sonar
-        </a>
+          <a
+            href={sonarConfig.frontendURL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block bg-yellow-600 hover:bg-yellow-700 text-white font-medium py-2 px-6 rounded-lg transition-colors"
+          >
+            Continue Setup on Sonar
+          </a>
         </div>
       </div>
     );

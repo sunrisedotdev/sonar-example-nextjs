@@ -36,17 +36,22 @@ export default function Home() {
   const { login, authenticated, logout, ready } = useSonarAuth();
 
   // Registration data
-  const { loading: entitiesLoading, entities, error: entitiesError } = useSonarEntities({
+  const {
+    loading: entitiesLoading,
+    entities,
+    error: entitiesError,
+  } = useSonarEntities({
     saleUUID: saleUUID,
   });
 
-  const eligibleEntities =
-    entities?.filter(
-      (entity) => entity.SaleEligibility === SaleEligibility.ELIGIBLE
-    ) || [];
+  const eligibleEntities = entities?.filter((entity) => entity.SaleEligibility === SaleEligibility.ELIGIBLE) || [];
 
   // Sale data
-  const { loading: entityLoading, entity, error: entityError } = useSonarEntity({
+  const {
+    loading: entityLoading,
+    entity,
+    error: entityError,
+  } = useSonarEntity({
     saleUUID: saleUUID,
     walletAddress: address,
   });
@@ -60,9 +65,7 @@ export default function Home() {
           {/* Header with Status Toggle */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
-              <h1 className="text-3xl font-bold text-gray-900">
-                Easy Company Token Sale
-              </h1>
+              <h1 className="text-3xl font-bold text-gray-900">Easy Company Token Sale</h1>
               <button
                 onClick={toggleSaleLive}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
@@ -79,12 +82,8 @@ export default function Home() {
             {!saleIsLive && (
               <div className="bg-linear-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
                 <div className="text-center">
-                  <p className="text-blue-900 font-semibold text-lg">
-                    Sale Starting Soon
-                  </p>
-                  <p className="text-blue-700">
-                    Register now to ensure you&apos;re ready when the sale goes live
-                  </p>
+                  <p className="text-blue-900 font-semibold text-lg">Sale Starting Soon</p>
+                  <p className="text-blue-700">Register now to ensure you&apos;re ready when the sale goes live</p>
                 </div>
               </div>
             )}
@@ -92,9 +91,7 @@ export default function Home() {
             {saleIsLive && (
               <div className="bg-linear-to-r bg-green-50 border border-green-200 rounded-lg p-6">
                 <div className="text-center">
-                  <p className="text-green-700 font-semibold text-lg">
-                    The sale is now live!
-                  </p>
+                  <p className="text-green-700 font-semibold text-lg">The sale is now live!</p>
                 </div>
               </div>
             )}
@@ -103,18 +100,11 @@ export default function Home() {
           {/* Registration Phase */}
           {!saleIsLive && (
             <div className="flex flex-col gap-8">
-              <AuthenticationSection
-                ready={ready}
-                authenticated={authenticated}
-                login={login}
-                logout={logout}
-              />
+              <AuthenticationSection ready={ready} authenticated={authenticated} login={login} logout={logout} />
 
               {authenticated && (
                 <div className="flex flex-col gap-4">
-                  <h2 className="text-xl font-semibold text-gray-900">
-                    Check Your Eligibility
-                  </h2>
+                  <h2 className="text-xl font-semibold text-gray-900">Check Your Eligibility</h2>
 
                   <EntitiesList
                     loading={entitiesLoading}
@@ -141,18 +131,11 @@ export default function Home() {
           {saleIsLive && (
             <div className="flex flex-col gap-8">
               {/* Connection Buttons */}
-              <AuthenticationSection
-                ready={ready}
-                authenticated={authenticated}
-                login={login}
-                logout={logout}
-              />
+              <AuthenticationSection ready={ready} authenticated={authenticated} login={login} logout={logout} />
 
               {/* Entity Information */}
               <div className="flex flex-col gap-4">
-                <h2 className="text-xl font-semibold text-gray-900">
-                  Your Entity Information
-                </h2>
+                <h2 className="text-xl font-semibold text-gray-900">Your Entity Information</h2>
                 <ConnectKitButton />
                 <Entity
                   loading={entityLoading}
@@ -166,17 +149,13 @@ export default function Home() {
               {/* Purchase Panel */}
               {isEligible && address && (
                 <div className="flex flex-col gap-4">
-                  <h2 className="text-xl font-semibold text-gray-900">
-                    Make a Purchase
-                  </h2>
+                  <h2 className="text-xl font-semibold text-gray-900">Make a Purchase</h2>
                   <PurchaseCard entityID={entity.EntityID} walletAddress={address} />
                 </div>
               )}
 
               {/* Not Eligible Message */}
-              {entity && !isEligible && (
-                <NotEligibleMessage sonarHomeURL={sonarHomeURL.href} />
-              )}
+              {entity && !isEligible && <NotEligibleMessage sonarHomeURL={sonarHomeURL.href} />}
             </div>
           )}
         </div>

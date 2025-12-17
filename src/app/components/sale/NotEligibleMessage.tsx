@@ -7,8 +7,8 @@ export function NotEligibleMessage({ sonarHomeURL }: NotEligibleMessageProps) {
     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
       <p className="text-yellow-800 font-medium mb-2">Not Eligible</p>
       <p className="text-yellow-700 mb-4">
-        Your entity is not currently eligible to participate in this sale.
-        Please check your eligibility status or complete any required setup steps.
+        Your entity is not currently eligible to participate in this sale. Please check your eligibility status or
+        complete any required setup steps.
       </p>
       <div className="flex gap-4">
         <a

@@ -24,21 +24,15 @@ export function EligibilityResults({
       {hasEligibleEntity ? (
         <div>
           <p className="text-green-600 font-medium text-lg">
-            ✓ You have {eligibleEntities.length} eligible{" "}
-            {eligibleEntities.length === 1 ? "entity" : "entities"}!
+            ✓ You have {eligibleEntities.length} eligible {eligibleEntities.length === 1 ? "entity" : "entities"}!
           </p>
-          <p className="text-gray-700">
-            You&apos;re ready to participate when the sale goes live.
-          </p>
+          <p className="text-gray-700">You&apos;re ready to participate when the sale goes live.</p>
         </div>
       ) : (
         <div>
-          <p className="text-yellow-700 font-medium text-lg">
-            No eligible entities found
-          </p>
+          <p className="text-yellow-700 font-medium text-lg">No eligible entities found</p>
           <p className="text-gray-700">
-            Your entities are not eligible for this sale, or you need to
-            complete your setup.
+            Your entities are not eligible for this sale, or you need to complete your setup.
           </p>
           <a
             href={`${sonarFrontendURL}/sonar/${saleUUID}`}

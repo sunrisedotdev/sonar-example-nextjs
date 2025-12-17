@@ -9,13 +9,7 @@ interface EntitiesListProps {
   sonarFrontendURL: string | undefined;
 }
 
-export function EntitiesList({
-  loading,
-  error,
-  entities,
-  saleUUID,
-  sonarFrontendURL,
-}: EntitiesListProps) {
+export function EntitiesList({ loading, error, entities, saleUUID, sonarFrontendURL }: EntitiesListProps) {
   if (loading) {
     return <p className="text-gray-600">Loading your entities...</p>;
   }
@@ -33,8 +27,7 @@ export function EntitiesList({
       <div className="flex flex-col gap-2 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
         <p className="text-yellow-800 font-medium">No entities found</p>
         <p className="text-yellow-700">
-          You need to set up an entity on Sonar before you can participate in
-          this sale.
+          You need to set up an entity on Sonar before you can participate in this sale.
         </p>
         <a
           href={`${sonarFrontendURL}/sonar/${saleUUID}`}

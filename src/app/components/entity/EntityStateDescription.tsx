@@ -9,8 +9,8 @@ export function EntityStateDescription({ entity }: EntityStateDescriptionProps) 
     return (
       <div className="bg-amber-50 p-2 rounded-md w-full">
         <p className="text-amber-500 w-full">
-          No entity found. You must have an entity in Sonar with a linked wallet
-          matching the currently connected wallet.
+          No entity found. You must have an entity in Sonar with a linked wallet matching the currently connected
+          wallet.
         </p>
       </div>
     );
@@ -35,8 +35,7 @@ export function EntityStateDescription({ entity }: EntityStateDescriptionProps) 
     case EntitySetupState.FAILURE:
       stateFgColor = "text-amber-500";
       stateBgColor = "bg-amber-50";
-      stateDescription =
-        "There is an issue with your entity setup that needs to be resolved on Sonar";
+      stateDescription = "There is an issue with your entity setup that needs to be resolved on Sonar";
       break;
     case EntitySetupState.FAILURE_FINAL:
       stateFgColor = "text-red-500";

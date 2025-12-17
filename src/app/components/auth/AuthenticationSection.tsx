@@ -9,12 +9,7 @@ interface AuthenticationSectionProps {
   logout: () => void;
 }
 
-export function AuthenticationSection({
-  ready,
-  authenticated,
-  login,
-  logout,
-}: AuthenticationSectionProps) {
+export function AuthenticationSection({ ready, authenticated, login, logout }: AuthenticationSectionProps) {
   const pathname = usePathname();
 
   const handleLogin = () => {
@@ -31,9 +26,7 @@ export function AuthenticationSection({
         <p className="text-gray-600">Loading authentication...</p>
       ) : !authenticated ? (
         <div>
-          <p className="text-gray-600">
-            Connect your Sonar account to check your eligibility status.
-          </p>
+          <p className="text-gray-600">Connect your Sonar account to check your eligibility status.</p>
           <button
             onClick={handleLogin}
             className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors"
@@ -44,10 +37,7 @@ export function AuthenticationSection({
       ) : (
         <div className="flex flex-row gap-2 justify-between items-center">
           <p className="text-green-600 font-medium">✓ Sonar Connected</p>
-          <button
-            onClick={logout}
-            className="text-blue-600 hover:text-blue-800 font-medium underline"
-          >
+          <button onClick={logout} className="text-blue-600 hover:text-blue-800 font-medium underline">
             Disconnect from Sonar
           </button>
         </div>
