@@ -20,7 +20,7 @@ export function EligibilityResults({
   }
 
   return (
-    <div className="mt-6 p-6 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-lg border border-indigo-200">
+    <div className="mt-6 p-6 bg-linear-to-r from-indigo-50 to-blue-50 rounded-lg border border-indigo-200">
       {hasEligibleEntity ? (
         <div>
           <p className="text-green-700 font-medium text-lg mb-2">

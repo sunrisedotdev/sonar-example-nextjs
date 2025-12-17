@@ -78,7 +78,7 @@ export default function Home() {
 
             {/* Countdown Banner */}
             {!saleIsLive && (
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 mb-6">
+              <div className="bg-linear-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 mb-6">
                 <div className="text-center">
                   <p className="text-blue-900 font-semibold text-lg mb-2">
                     Sale Starting Soon
