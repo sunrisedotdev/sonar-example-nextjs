@@ -64,7 +64,7 @@ export function Entity({ loading, entity, error, authenticated, walletAddress }:
     <div className="flex flex-col gap-2 w-full">
       <EntityCard entity={entity} />
       <p className="text-gray-700 text-sm">
-        You can use a different entity by connecting a wallet that is linked to a different entity on{" "}
+        You can switch entity by connecting a wallet that is linked to one of your other entities on{" "}
         <a
           href={`${sonarConfig.frontendURL}/sonar/${saleUUID}`}
           target="_blank"
