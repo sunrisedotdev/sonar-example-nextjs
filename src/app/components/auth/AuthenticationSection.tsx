@@ -25,11 +25,11 @@ export function AuthenticationSection({ ready, authenticated, login, logout }: A
       {!ready ? (
         <p className="text-gray-600">Loading authentication...</p>
       ) : !authenticated ? (
-        <div>
+        <div className="flex flex-col gap-2">
           <p className="text-gray-600">Connect your Sonar account to check your eligibility status.</p>
           <button
             onClick={handleLogin}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors w-fit"
           >
             Connect with Sonar
           </button>
