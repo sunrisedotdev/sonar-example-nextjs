@@ -8,14 +8,18 @@ The example app demonstrates how to:
 
 - Setup providers in `src/app/Provider.tsx`
 - Authenticate with Sonar via the oauth flow
-    - See `AuthButton` on how to create the login/logout buttons
+    - See `src/app/components/auth/AuthenticationSection.tsx` on how to create the login/logout buttons
     - See `src/app/oauth/callback/page.tsx` for an example of the oauth callback handler
-- Display setup/eligibily state of the entity on Sonar that is linked to the currently connected wallet
-    - See `src/app/SonarEntity.tsx` for an example of how to display the state of a user's entity
+- Prior to a sale going live, a way to list the state of all of a user's entities
+    - See `src/app/page.tsx` while in the `!saleIsLive` state
+- When sale is live, display setup/eligibily state of the entity on Sonar that is linked to the currently connected wallet
+    - See `src/app/page.tsx` while in the `saleIsLive` state
+- Surface the user's entity setup/eligibility state
+    - See components in `src/app/components/entity`
 - Run prepurchase checks
-    - See `src/app/PurchasePanel.tsx` for an example of how to run these checks and interpret the result
+    - See `src/app/components/sale/PurchaseCard.tsx` for an example of how to run these checks and interpret the result
 - Submit a purchase transaction to an example sale contract
-    - See the `ReadyToPurchasePanel` in `src/app/PurchasePanel.tsx` for an example of how to generate a purchase permit and pass this to the contract,
+    - See the `ReadyToPurchaseSection` in `src/app/components/sale/PurchaseCard.tsx` for an example of how to generate a purchase permit and pass this to the contract,
       using the `useSaleContract` hook in `src/app/hooks.ts`
 
 ## Running the app locally
