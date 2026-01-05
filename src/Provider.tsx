@@ -1,5 +1,3 @@
-"use client";
-
 import { WagmiProvider, createConfig, http } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ConnectKitProvider, getDefaultConfig } from "connectkit";
@@ -15,18 +13,18 @@ const config = createConfig(
     },
 
     // Required API Keys
-    walletConnectProjectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ?? "",
+    walletConnectProjectId: import.meta.env.VITE_WALLETCONNECT_PROJECT_ID ?? "",
 
     // Required App Info
-    appName: "Sonar Next.js example app",
+    appName: "Sonar React example app",
     appDescription:
-      "Next.js app showing how to integrate with the Sonar API via the sonar-react and sonar-core libraries.",
+      "React app showing how to integrate with the Sonar API via the sonar-react and sonar-core libraries.",
   })
 );
 
 const queryClient = new QueryClient();
 
-export const Provider = ({ children }: { children: React.ReactNode }) => {
+export function Provider({ children }: { children: React.ReactNode }) {
   return (
     <SonarProvider config={sonarConfig}>
       <WagmiProvider config={config}>
@@ -36,4 +34,5 @@ export const Provider = ({ children }: { children: React.ReactNode }) => {
       </WagmiProvider>
     </SonarProvider>
   );
-};
+}
+

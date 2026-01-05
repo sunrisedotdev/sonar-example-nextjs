@@ -1,5 +1,3 @@
-"use client";
-
 import { PrePurchaseFailureReason, GeneratePurchasePermitResponse, EntityID } from "@echoxyz/sonar-core";
 import { useState } from "react";
 import { saleUUID } from "../../config";

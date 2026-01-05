@@ -1,9 +1,7 @@
-"use client";
-
 import { useEffect, useRef, useState } from "react";
 import { useSonarAuth } from "@echoxyz/sonar-react";
 
-export default function OAuthCallback() {
+export function OAuthCallback() {
   const { authenticated, completeOAuth, ready } = useSonarAuth();
   const oauthCompletionTriggered = useRef(false);
   const [oauthError, setOAuthError] = useState<string | null>(null);

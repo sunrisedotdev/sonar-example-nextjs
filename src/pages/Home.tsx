@@ -1,19 +1,17 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { ConnectKitButton } from "connectkit";
 import { useSonarAuth, useSonarEntity, useSonarEntities } from "@echoxyz/sonar-react";
-import { saleUUID, sonarHomeURL, sonarConfig } from "./config";
+import { saleUUID, sonarHomeURL, sonarConfig } from "../config";
 import { useAccount } from "wagmi";
-import PurchaseCard from "./components/sale/PurchaseCard";
+import PurchaseCard from "../components/sale/PurchaseCard";
 import { SaleEligibility } from "@echoxyz/sonar-core";
-import { AuthenticationSection } from "./components/auth/AuthenticationSection";
-import { EntityCard } from "./components/entity/EntityCard";
-import { NotEligibleMessage } from "./components/sale/NotEligibleMessage";
-import { EntitiesList } from "./components/registration/EntitiesList";
-import { EligibilityResults } from "./components/registration/EligibilityResults";
+import { AuthenticationSection } from "../components/auth/AuthenticationSection";
+import { EntityCard } from "../components/entity/EntityCard";
+import { NotEligibleMessage } from "../components/sale/NotEligibleMessage";
+import { EntitiesList } from "../components/registration/EntitiesList";
+import { EligibilityResults } from "../components/registration/EligibilityResults";
 
-export default function Home() {
+export function Home() {
   const [saleIsLive, setSaleIsLive] = useState(false);
 
   // Load sale state from localStorage
@@ -67,7 +65,7 @@ export default function Home() {
         </div>
       );
     }
-  
+
     if (entityLoading) {
       return (
         <div className="flex flex-col gap-2 bg-gray-50 rounded-lg p-6 w-full">
@@ -75,7 +73,7 @@ export default function Home() {
         </div>
       );
     }
-  
+
     if (entityError) {
       return (
         <div className="flex flex-col gap-2 bg-red-50 border border-red-200 rounded-lg p-6 w-full">
@@ -84,7 +82,7 @@ export default function Home() {
         </div>
       );
     }
-  
+
     if (!entity) {
       return (
         <div className="flex flex-col gap-2 bg-yellow-50 border border-yellow-200 rounded-lg p-6 w-full">
@@ -107,7 +105,7 @@ export default function Home() {
         </div>
       );
     }
-  
+
     return (
       <div className="flex flex-col gap-2 w-full">
         <EntityCard entity={entity} />
@@ -125,8 +123,7 @@ export default function Home() {
         </p>
       </div>
     );
-  }
-  
+  };
 
   return (
     <>
@@ -147,90 +144,88 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="min-h-screen pt-16 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-lg shadow-xl p-8 w-[620px]">
-            {/* Header */}
-            <div className="mb-8">
-              <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
-                <h1 className="text-3xl font-bold text-gray-900">Easy Company Token Sale</h1>
-              </div>
-
-              {/* Countdown Banner */}
-              {!saleIsLive && (
-                <div className="bg-linear-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
-                  <div className="text-center">
-                    <p className="text-blue-900 font-semibold text-lg">Sale Starting Soon</p>
-                    <p className="text-blue-700">Register now to ensure you&apos;re ready when the sale goes live</p>
-                  </div>
-                </div>
-              )}
-
-              {saleIsLive && (
-                <div className="bg-linear-to-r bg-green-50 border border-green-200 rounded-lg p-6">
-                  <div className="text-center">
-                    <p className="text-green-700 font-semibold text-lg">The sale is now live!</p>
-                  </div>
-                </div>
-              )}
+      <div className="min-h-screen pt-16 py-12 px-4 sm:px-6 lg:px-8 flex justify-center">
+        <div className="bg-white rounded-lg shadow-xl p-8 w-[620px]">
+          {/* Header */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
+              <h1 className="text-3xl font-bold text-gray-900">Easy Company Token Sale</h1>
             </div>
 
-            {/* Registration Phase */}
+            {/* Countdown Banner */}
             {!saleIsLive && (
-              <div className="flex flex-col gap-8">
-                <AuthenticationSection ready={ready} authenticated={authenticated} login={login} logout={logout} />
-
-                {authenticated && (
-                  <div className="flex flex-col gap-4">
-                    <h2 className="text-xl font-semibold text-gray-900">Check Your Eligibility</h2>
-
-                    <EntitiesList
-                      loading={entitiesLoading}
-                      error={entitiesError}
-                      entities={entities}
-                      saleUUID={saleUUID}
-                      sonarFrontendURL={sonarConfig.frontendURL}
-                    />
-
-                    {!entitiesLoading && !entitiesError && entities && (
-                      <EligibilityResults
-                        entities={entities}
-                        eligibleEntities={eligibleEntities}
-                        saleUUID={saleUUID}
-                        sonarFrontendURL={sonarConfig.frontendURL}
-                      />
-                    )}
-                  </div>
-                )}
+              <div className="bg-linear-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
+                <div className="text-center">
+                  <p className="text-blue-900 font-semibold text-lg">Sale Starting Soon</p>
+                  <p className="text-blue-700">Register now to ensure you&apos;re ready when the sale goes live</p>
+                </div>
               </div>
             )}
 
-            {/* Sale Phase */}
             {saleIsLive && (
-              <div className="flex flex-col gap-8">
-                {/* Connection Buttons */}
-                <AuthenticationSection ready={ready} authenticated={authenticated} login={login} logout={logout} />
-
-                {/* Entity Information */}
-                <div className="flex flex-col gap-4">
-                  <h2 className="text-xl font-semibold text-gray-900">Your Entity Information</h2>
-                  <ConnectKitButton />
-                  <EntitySection />
+              <div className="bg-linear-to-r bg-green-50 border border-green-200 rounded-lg p-6">
+                <div className="text-center">
+                  <p className="text-green-700 font-semibold text-lg">The sale is now live!</p>
                 </div>
-
-                {/* Purchase Panel */}
-                {isEligible && address && (
-                  <div className="flex flex-col gap-4">
-                    <h2 className="text-xl font-semibold text-gray-900">Make a Purchase</h2>
-                    <PurchaseCard entityID={entity.EntityID} walletAddress={address} />
-                  </div>
-                )}
-
-                {/* Not Eligible Message */}
-                {entity && !isEligible && <NotEligibleMessage sonarHomeURL={sonarHomeURL.href} />}
               </div>
             )}
           </div>
+
+          {/* Registration Phase */}
+          {!saleIsLive && (
+            <div className="flex flex-col gap-8">
+              <AuthenticationSection ready={ready} authenticated={authenticated} login={login} logout={logout} />
+
+              {authenticated && (
+                <div className="flex flex-col gap-4">
+                  <h2 className="text-xl font-semibold text-gray-900">Check Your Eligibility</h2>
+
+                  <EntitiesList
+                    loading={entitiesLoading}
+                    error={entitiesError}
+                    entities={entities}
+                    saleUUID={saleUUID}
+                    sonarFrontendURL={sonarConfig.frontendURL}
+                  />
+
+                  {!entitiesLoading && !entitiesError && entities && (
+                    <EligibilityResults
+                      entities={entities}
+                      eligibleEntities={eligibleEntities}
+                      saleUUID={saleUUID}
+                      sonarFrontendURL={sonarConfig.frontendURL}
+                    />
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Sale Phase */}
+          {saleIsLive && (
+            <div className="flex flex-col gap-8">
+              {/* Connection Buttons */}
+              <AuthenticationSection ready={ready} authenticated={authenticated} login={login} logout={logout} />
+
+              {/* Entity Information */}
+              <div className="flex flex-col gap-4">
+                <h2 className="text-xl font-semibold text-gray-900">Your Entity Information</h2>
+                <ConnectKitButton />
+                <EntitySection />
+              </div>
+
+              {/* Purchase Panel */}
+              {isEligible && address && (
+                <div className="flex flex-col gap-4">
+                  <h2 className="text-xl font-semibold text-gray-900">Make a Purchase</h2>
+                  <PurchaseCard entityID={entity.EntityID} walletAddress={address} />
+                </div>
+              )}
+
+              {/* Not Eligible Message */}
+              {entity && !isEligible && <NotEligibleMessage sonarHomeURL={sonarHomeURL.href} />}
+            </div>
+          )}
         </div>
       </div>
     </>

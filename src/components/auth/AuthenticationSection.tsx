@@ -1,7 +1,3 @@
-"use client";
-
-import { usePathname } from "next/navigation";
-
 interface AuthenticationSectionProps {
   ready: boolean;
   authenticated: boolean;
@@ -10,13 +6,9 @@ interface AuthenticationSectionProps {
 }
 
 export function AuthenticationSection({ ready, authenticated, login, logout }: AuthenticationSectionProps) {
-  const pathname = usePathname();
-
   const handleLogin = () => {
     // Store current path before redirecting to OAuth
-    if (typeof window !== "undefined") {
-      localStorage.setItem("sonar_oauth_return_path", pathname);
-    }
+    localStorage.setItem("sonar_oauth_return_path", window.location.pathname);
     login();
   };
 

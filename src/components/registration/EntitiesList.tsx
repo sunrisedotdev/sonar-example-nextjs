@@ -1,6 +1,6 @@
 import { EntityDetails } from "@echoxyz/sonar-core";
 import { EntityCard } from "../entity/EntityCard";
-import { sonarConfig } from "@/app/config";
+import { sonarConfig } from "../../config";
 
 interface EntitiesListProps {
   loading: boolean;
