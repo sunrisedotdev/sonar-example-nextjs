@@ -42,7 +42,7 @@ function readinessConfig(
       return warningConfig("The connected wallet is not eligible for this sale. Connect a different wallet.");
     case PrePurchaseFailureReason.MAX_WALLETS_USED:
       return warningConfig(
-        "Maximum number of wallets reached — This entity can't use the connected wallet. Use a previous wallet."
+        "Maximum number of wallets reached — This entity can’t use the connected wallet. Use a previous wallet."
       );
     case PrePurchaseFailureReason.NO_RESERVED_ALLOCATION:
       return warningConfig(
