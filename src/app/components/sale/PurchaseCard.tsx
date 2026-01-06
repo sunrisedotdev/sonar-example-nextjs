@@ -8,7 +8,7 @@ import {
   UseSonarPurchaseResultNotReadyToPurchase,
   UseSonarPurchaseResultReadyToPurchase,
 } from "../../hooks/use-sonar-purchase";
-import { useSaleContract } from "../../hooks";
+import { useSaleContract } from "../../hooks/use-sale-contract";
 
 function readinessConfig(
   sonarPurchaser: UseSonarPurchaseResultReadyToPurchase | UseSonarPurchaseResultNotReadyToPurchase
