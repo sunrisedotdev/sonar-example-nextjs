@@ -1,16 +1,13 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 
 /**
  * OAuth callback content - uses useSearchParams which requires Suspense
  */
 function OAuthCallbackContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
-  const { update } = useSession();
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -22,13 +19,13 @@ function OAuthCallbackContent() {
 
       if (oauthError) {
         setError(`OAuth error: ${oauthError}`);
-        setTimeout(() => router.push("/"), 3000);
+        setTimeout(() => (window.location.href = "/"), 3000);
         return;
       }
 
       if (!code || !state) {
         setError("Missing authorization code or state");
-        setTimeout(() => router.push("/"), 3000);
+        setTimeout(() => (window.location.href = "/"), 3000);
         return;
       }
 
@@ -39,25 +36,21 @@ function OAuthCallbackContent() {
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
           setError(errorData.error || "Failed to complete OAuth flow");
-          setTimeout(() => router.push("/"), 3000);
+          setTimeout(() => (window.location.href = "/"), 3000);
           return;
         }
 
-        // Success - refresh NextAuth session to pick up new tokens
-        // The update() call triggers a new session fetch, which runs the session callback
-        // The session callback checks the token store and updates sonarConnected
-        await update(); // Force NextAuth to refresh the session (triggers session callback server-side)
-
-        // Navigate to home - the session should now be updated
-        router.push("/");
+        // Success - do a hard navigation to home
+        // This ensures a full page load that picks up the updated session
+        window.location.href = "/";
       } catch {
         setError("Failed to process OAuth callback");
-        setTimeout(() => router.push("/"), 3000);
+        setTimeout(() => (window.location.href = "/"), 3000);
       }
     };
 
     handleCallback();
-  }, [searchParams, router, update]);
+  }, [searchParams]);
 
   return (
     <div className="min-h-screen flex items-center justify-center">
