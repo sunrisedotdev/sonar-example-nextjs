@@ -5,7 +5,8 @@ import { createSonarClient } from "@/lib/sonar-client";
 import { APIError } from "@echoxyz/sonar-core";
 
 /**
- * Proxy request to Sonar PrePurchaseCheck endpoint
+ * Proxy request to Sonar ReadEntities endpoint
+ * Returns all entities for the authenticated user
  */
 export async function POST(request: NextRequest) {
     const session = await getAuth();
@@ -15,10 +16,10 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { saleUUID, entityID, walletAddress } = body;
+    const { saleUUID } = body;
 
-    if (!saleUUID || !entityID || !walletAddress) {
-        return NextResponse.json({ error: "Missing required parameters" }, { status: 400 });
+    if (!saleUUID) {
+        return NextResponse.json({ error: "Missing saleUUID" }, { status: 400 });
     }
 
     try {
@@ -41,7 +42,7 @@ export async function POST(request: NextRequest) {
 
         // Create Sonar client and make the request
         const client = createSonarClient(session.user.id);
-        const result = await client.prePurchaseCheck({ saleUUID, entityID, walletAddress });
+        const result = await client.listAvailableEntities({ saleUUID });
 
         return NextResponse.json(result);
     } catch (error) {

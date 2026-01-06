@@ -1,4 +1,5 @@
-import NextAuth from "next-auth";
+import NextAuth, { Account, User, Session } from "next-auth";
+import { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { getTokenStore, SonarTokens } from "@/lib/token-store";
 import { siwe } from "@/lib/siwe";
@@ -91,12 +92,7 @@ const authOptions = {
         strategy: "jwt" as const,
     },
     callbacks: {
-        async jwt(params: {
-            token: any;
-            account?: { provider: string } | null;
-            user?: any;
-        }) {
-            const { token, account, user } = params;
+        async jwt({ token, account, user }: { token: JWT; account?: Account | null; user?: User }) {
             // Initial sign in
             if (account && user) {
                 if (account.provider === "siwe") {
@@ -115,7 +111,7 @@ const authOptions = {
                         try {
                             const newTokens = await refreshSonarToken(storedTokens.refreshToken);
                             getTokenStore().setTokens(token.sub, newTokens);
-                        } catch (error) {
+                        } catch {
                             // Refresh failed - clear tokens and force re-auth
                             getTokenStore().clearTokens(token.sub);
                         }
@@ -125,8 +121,7 @@ const authOptions = {
 
             return token;
         },
-        async session(params: { session: any; token: any }) {
-            const { session, token } = params;
+        async session({ session, token }: { session: Session; token: JWT }) {
             // Add Sonar connection status to session
             if (token.sub) {
                 const storedTokens = getTokenStore().getTokens(token.sub);
@@ -163,16 +158,4 @@ export const { GET, POST } = auth.handlers;
 export const { auth: getAuth } = auth;
 export { authOptions };
 
-// Helper to get session in API routes
-export async function getSession(req?: Request) {
-    // In NextAuth v5, we can use the handler to get the session
-    // For now, we'll use a workaround with cookies
-    if (typeof window === "undefined" && req) {
-        const cookies = req.headers.get("cookie") || "";
-        // Parse session from cookies - this is a simplified approach
-        // In production, you might want to use NextAuth's built-in session handling
-        return null; // Will be handled by getServerSession in route handlers
-    }
-    return null;
-}
 

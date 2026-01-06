@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getAuth } from "../../[...nextauth]/route";
 import { generatePKCEParams } from "@echoxyz/sonar-core";
 import { buildAuthorizationUrl } from "@echoxyz/sonar-core";
@@ -7,7 +7,7 @@ import { setPKCEVerifier } from "@/lib/pkce-store";
 /**
  * Generate Sonar OAuth authorization URL with PKCE and redirect user
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
     const session = await getAuth();
 
     if (!session?.user?.id) {

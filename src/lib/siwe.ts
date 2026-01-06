@@ -1,6 +1,6 @@
 /**
  * SIWE (Sign In With Ethereum) verification utilities
- * Implements proper signature verification using the siwe library
+ * Uses the siwe library for message parsing and signature verification
  */
 
 import { SiweMessage } from "siwe";
@@ -24,15 +24,8 @@ export const siwe = {
                 const normalizedExpected = expectedDomain.split(":")[0];
                 const normalizedParsed = siweMessage.domain.split(":")[0];
                 if (normalizedExpected !== normalizedParsed) {
+                    console.error("SIWE: Domain mismatch");
                     return null;
-                }
-            }
-
-            // Validate expiration time if present
-            if (siweMessage.expirationTime) {
-                const expirationDate = new Date(siweMessage.expirationTime);
-                if (expirationDate.getTime() < Date.now()) {
-                    return null; // Message has expired
                 }
             }
 
@@ -41,35 +34,28 @@ export const siwe = {
             if (expectedChainId && siweMessage.chainId) {
                 const expectedChainIdNum = parseInt(expectedChainId, 10);
                 if (siweMessage.chainId !== expectedChainIdNum) {
-                    return null; // Chain ID mismatch
+                    console.error("SIWE: Chain ID mismatch");
+                    return null;
                 }
             }
 
             // Verify the signature using the siwe library
             // This performs cryptographic signature verification and validates message fields
-            const verifyOptions: Parameters<typeof siweMessage.verify>[0] = {
-                signature: signature as `0x${string}`,
-            };
-
-            // Add domain validation if configured
-            if (expectedDomain) {
-                verifyOptions.domain = expectedDomain;
-            }
-
-            const result = await siweMessage.verify(verifyOptions);
+            const result = await siweMessage.verify({
+                signature,
+            });
 
             // Check if verification was successful
             if (!result.success) {
+                console.error("SIWE: Verification failed", result.error);
                 return null;
             }
 
             // Return the verified address from the message
             return siweMessage.address.toLowerCase();
         } catch (error) {
-            // Any error during validation or verification means the signature is invalid
-            // Don't log the error to avoid information leakage
+            console.error("SIWE verification error:", error);
             return null;
         }
     },
 };
-

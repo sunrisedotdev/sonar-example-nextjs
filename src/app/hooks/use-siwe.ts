@@ -20,8 +20,8 @@ export function useSIWE() {
         const domain = typeof window !== "undefined" ? window.location.host : "localhost";
         const origin = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000";
         const statement = "Sign in with Ethereum to the app.";
-        // Generate cryptographically secure nonce
-        const nonce = crypto.randomUUID();
+        // Generate alphanumeric nonce (siwe requires no hyphens)
+        const nonce = crypto.randomUUID().replace(/-/g, "");
         const expirationTime = new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(); // 24 hours
 
         const message = `${domain} wants you to sign in with your Ethereum account:
@@ -62,4 +62,3 @@ Expiration Time: ${expirationTime}`;
         signInWithEthereum,
     };
 }
-

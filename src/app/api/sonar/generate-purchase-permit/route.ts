@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
             try {
                 tokens = await refreshSonarToken(tokens.refreshToken);
                 getTokenStore().setTokens(session.user.id, tokens);
-            } catch (error) {
+            } catch {
                 return NextResponse.json({ error: "Failed to refresh token" }, { status: 401 });
             }
         }

@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getAuth } from "../../[...nextauth]/route";
 import { getTokenStore } from "@/lib/token-store";
 
 /**
  * Disconnect Sonar account (remove stored tokens)
  */
-export async function POST(request: NextRequest) {
+export async function POST() {
     const session = await getAuth();
 
     if (!session?.user?.id) {

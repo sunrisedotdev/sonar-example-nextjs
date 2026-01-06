@@ -80,8 +80,11 @@ export function useSonarPurchase(args: {
         return data;
     }, [session?.user?.id, args.saleUUID, args.entityID, args.walletAddress]);
 
+    const sonarConnected = session?.user?.sonarConnected ?? false;
+
     useEffect(() => {
-        if (!session?.user?.id) {
+        // Only fetch if user is authenticated AND connected to Sonar
+        if (!session?.user?.id || !sonarConnected) {
             setState({
                 loading: false,
                 readyToPurchase: false,
@@ -142,7 +145,7 @@ export function useSonarPurchase(args: {
         };
 
         fetchPurchaseData();
-    }, [session?.user?.id, args.saleUUID, args.entityID, args.walletAddress, generatePurchasePermit]);
+    }, [session?.user?.id, sonarConnected, args.saleUUID, args.entityID, args.walletAddress, generatePurchasePermit]);
 
     return state;
 }
