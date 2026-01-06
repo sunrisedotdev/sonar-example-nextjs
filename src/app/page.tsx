@@ -37,20 +37,12 @@ export default function Home() {
   };
 
   // Registration data (all entities for the user)
-  const {
-    loading: entitiesLoading,
-    entities,
-    error: entitiesError,
-  } = useSonarEntities();
+  const { loading: entitiesLoading, entities, error: entitiesError } = useSonarEntities();
 
   const eligibleEntities = entities?.filter((entity) => entity.SaleEligibility === SaleEligibility.ELIGIBLE) || [];
 
   // Sale data (entity for current wallet)
-  const {
-    loading: entityLoading,
-    entity,
-    error: entityError,
-  } = useSonarEntity(address);
+  const { loading: entityLoading, entity, error: entityError } = useSonarEntity(address);
 
   const isEligible = entity && entity.SaleEligibility === SaleEligibility.ELIGIBLE;
 
@@ -198,10 +190,12 @@ export default function Home() {
                 <AuthenticationSection />
 
                 {/* Entity Information */}
-                {address && sonarConnected && (<div className="flex flex-col gap-4">
-                  <h2 className="text-xl font-semibold text-gray-900">Your Entity Information</h2>
-                  <EntitySection />
-                </div>)}
+                {address && sonarConnected && (
+                  <div className="flex flex-col gap-4">
+                    <h2 className="text-xl font-semibold text-gray-900">Your Entity Information</h2>
+                    <EntitySection />
+                  </div>
+                )}
 
                 {/* Purchase Card */}
                 {isEligible && address && (

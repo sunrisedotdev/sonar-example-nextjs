@@ -51,7 +51,10 @@ export function AuthenticationSection() {
       <div className="p-6 bg-blue-50 rounded-lg border border-blue-200">
         <div className="flex flex-col gap-3">
           <p className="text-gray-600">Sign in with your wallet to continue.</p>
-          <button onClick={handleSignIn} className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors w-fit">
+          <button
+            onClick={handleSignIn}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors w-fit"
+          >
             Sign in with Ethereum
           </button>
         </div>
@@ -69,7 +72,10 @@ export function AuthenticationSection() {
               Sign out
             </button>
           </div>
-          <button onClick={handleConnectSonar} className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors w-fit">
+          <button
+            onClick={handleConnectSonar}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors w-fit"
+          >
             Connect with Sonar
           </button>
         </div>

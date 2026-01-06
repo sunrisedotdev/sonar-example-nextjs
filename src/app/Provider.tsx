@@ -18,8 +18,7 @@ const config = createConfig(
 
     // Required App Info
     appName: "Sonar Next.js example app",
-    appDescription:
-      "Next.js app showing how to integrate with the Sonar API via backend OAuth and NextAuth.",
+    appDescription: "Next.js app showing how to integrate with the Sonar API via backend OAuth and NextAuth.",
   })
 );
 
