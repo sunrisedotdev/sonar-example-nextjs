@@ -14,7 +14,6 @@
     "@echoxyz/sonar-react": "^0.12.0",
     "@tanstack/react-query": "^5.90.12",
     "connectkit": "^1.9.1",
-    "ethers": "^6.16.0",
     "next": "^15.5.7",
     "next-auth": "5.0.0-beta.30",
     "react": "^18.3.1",
