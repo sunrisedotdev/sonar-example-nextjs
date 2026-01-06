@@ -1,56 +1,23 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getAuth, refreshSonarToken } from "../../auth/[...nextauth]/route";
-import { getTokenStore } from "@/lib/token-store";
-import { createSonarClient } from "@/lib/sonar-client";
-import { APIError } from "@echoxyz/sonar-core";
+import { NextResponse } from "next/server";
+import { createSonarRouteHandler } from "@/lib/sonar-route-handler";
+
+type EntitiesRequest = {
+  saleUUID: string;
+};
 
 /**
  * Proxy request to Sonar ReadEntities endpoint
  * Returns all entities for the authenticated user
  */
-export async function POST(request: NextRequest) {
-  const session = await getAuth();
+export const POST = createSonarRouteHandler<EntitiesRequest>(
+  async ({ client }, body) => {
+    const { saleUUID } = body;
 
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const body = await request.json();
-  const { saleUUID } = body;
-
-  if (!saleUUID) {
-    return NextResponse.json({ error: "Missing saleUUID" }, { status: 400 });
-  }
-
-  try {
-    // Get tokens from store
-    let tokens = getTokenStore().getTokens(session.user.id);
-    if (!tokens) {
-      return NextResponse.json({ error: "Sonar account not connected" }, { status: 401 });
+    if (!saleUUID) {
+      return NextResponse.json({ error: "Missing saleUUID" }, { status: 400 });
     }
 
-    // Check if token needs refresh
-    const now = Math.floor(Date.now() / 1000);
-    if (tokens.expiresAt - now < 300) {
-      try {
-        tokens = await refreshSonarToken(tokens.refreshToken);
-        getTokenStore().setTokens(session.user.id, tokens);
-      } catch {
-        return NextResponse.json({ error: "Failed to refresh token" }, { status: 401 });
-      }
-    }
-
-    // Create Sonar client and make the request
-    const client = createSonarClient(session.user.id);
     const result = await client.listAvailableEntities({ saleUUID });
-
     return NextResponse.json(result);
-  } catch (error) {
-    if (error instanceof APIError) {
-      return NextResponse.json({ error: error.message }, { status: error.status });
-    }
-
-    console.error("Error calling Sonar API");
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-}
+);
