@@ -14,7 +14,7 @@ interface StateEntry {
 }
 
 /**
- * Store PKCE verifier and user ID linked to a state token in an encrypted cookie
+ * Store PKCE verifier and user ID linked to a state token in a cookie
  */
 export async function setPKCEVerifier(state: string, userId: string, codeVerifier: string): Promise<void> {
     const cookieStore = await cookies();
@@ -25,8 +25,7 @@ export async function setPKCEVerifier(state: string, userId: string, codeVerifie
         codeVerifier,
         expiresAt,
     };
-    
-    // Store in cookie (Next.js cookies are automatically encrypted in production)
+
     cookieStore.set(`${PKCE_COOKIE_PREFIX}${state}`, JSON.stringify(entry), {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
