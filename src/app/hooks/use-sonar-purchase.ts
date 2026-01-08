@@ -1,7 +1,7 @@
 "use client";
 
 import { EntityID, GeneratePurchasePermitResponse, PrePurchaseFailureReason } from "@echoxyz/sonar-core";
-import { useSession } from "next-auth/react";
+import { useSession } from "./use-session";
 import { useCallback, useEffect, useState } from "react";
 
 export type UseSonarPurchaseResultLoading = {
@@ -37,21 +37,20 @@ export type UseSonarPurchaseResult =
 
 /**
  * Hook for Sonar purchase flow
- * Replaces useSonarPurchase from sonar-react
  */
 export function useSonarPurchase(args: {
   saleUUID: string;
   entityID: EntityID;
   walletAddress: string;
 }): UseSonarPurchaseResult {
-  const { data: session } = useSession();
+  const { authenticated, sonarConnected, refreshSession } = useSession();
   const [state, setState] = useState<UseSonarPurchaseResult>({
     loading: true,
     readyToPurchase: false,
   });
 
   const generatePurchasePermit = useCallback(async (): Promise<GeneratePurchasePermitResponse> => {
-    if (!session?.user?.id) {
+    if (!authenticated) {
       throw new Error("Not authenticated");
     }
 
@@ -74,13 +73,11 @@ export function useSonarPurchase(args: {
 
     const data = await response.json();
     return data;
-  }, [session?.user?.id, args.saleUUID, args.entityID, args.walletAddress]);
-
-  const sonarConnected = session?.user?.sonarConnected ?? false;
+  }, [authenticated, args.saleUUID, args.entityID, args.walletAddress]);
 
   useEffect(() => {
     // Only fetch if user is authenticated AND connected to Sonar
-    if (!session?.user?.id || !sonarConnected) {
+    if (!authenticated || !sonarConnected) {
       setState({
         loading: false,
         readyToPurchase: false,
@@ -109,6 +106,11 @@ export function useSonarPurchase(args: {
         });
 
         if (!response.ok) {
+          // If server says not connected (e.g., tokens lost after hot reload), refresh session state
+          if (response.status === 401) {
+            await refreshSession();
+            return;
+          }
           const errorData = await response.json();
           throw new Error(errorData.error || "Failed to check purchase eligibility");
         }
@@ -141,7 +143,7 @@ export function useSonarPurchase(args: {
     };
 
     fetchPurchaseData();
-  }, [session?.user?.id, sonarConnected, args.saleUUID, args.entityID, args.walletAddress, generatePurchasePermit]);
+  }, [authenticated, sonarConnected, args.saleUUID, args.entityID, args.walletAddress, generatePurchasePermit, refreshSession]);
 
   return state;
 }

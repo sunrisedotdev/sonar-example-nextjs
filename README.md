@@ -30,7 +30,12 @@ pnpm dev
 - **Pre-purchase checks** — validate eligibility before transactions
 - **Purchase transactions** — generate permits and submit to the sale contract
 
-## Architecture Overview
+## Authentication Architecture
+
+For demonstration purposes, this example uses a minimal session system:
+
+- **Login** backend creates a random session ID stored in an HTTP-only cookie (no authentication required)
+- **Logout** clears the session and any associated Sonar tokens
 
 ### OAuth Flow
 
@@ -70,6 +75,15 @@ The backend handles the complete OAuth flow, storing tokens securely server-side
      │                    │                    │                    │
 ```
 
+### Token Refresh
+
+Access tokens expire after a set time. The backend automatically refreshes them:
+
+- Before each Sonar API call, the backend checks if the token expires within 5 minutes
+- If so, it uses `SonarClient.refreshToken()` to get new tokens
+- Refreshed tokens are stored back in the token store
+- **Concurrent request handling**: If multiple requests need to refresh simultaneously, promise coalescing ensures only one refresh API call is made
+
 ### Proxied API Requests
 
 Once authenticated, all Sonar API calls go through the backend, which handles token refresh automatically:
@@ -108,19 +122,24 @@ Once authenticated, all Sonar API calls go through the backend, which handles to
 src/
 ├── app/
 │   ├── api/
-│   │   ├── auth/
-│   │   │   ├── [...nextauth]/   # NextAuth config & session management
-│   │   │   └── sonar/           # Sonar OAuth routes (authorize, callback, disconnect)
-│   │   └── sonar/               # Proxied Sonar API routes (entities, pre-purchase, etc.)
+│   │   ├── auth/                 # Minimal session management
+│   │   └── sonar/                # Proxied Sonar API routes (entities, pre-purchase, etc.)
 │   ├── components/
-│   │   ├── auth/                # Login/logout UI
-│   │   ├── entity/              # Entity display components
-│   │   ├── registration/        # Pre-sale entity list & eligibility
-│   │   └── sale/                # Purchase flow UI
-│   ├── hooks/                   # React hooks for Sonar API calls
-│   ├── oauth/callback/          # OAuth callback page (frontend)
-│   ├── config.ts                # Environment configuration
-│   ├── page.tsx                 # Main page
-│   └── Provider.tsx             # App providers setup
-└── lib/                         # Server-side utilities (token storage, PKCE, Sonar client)
+│   │   ├── auth/                 # Login/logout UI
+│   │   ├── entity/               # Entity display components
+│   │   ├── registration/         # Pre-sale entity list & eligibility
+│   │   └── sale/                 # Purchase flow UI
+│   ├── hooks/
+│   │   ├── use-session.tsx       # Session state context & hook
+│   │   └── use-sonar-*.ts        # React hooks for Sonar API calls
+│   ├── oauth/callback/           # OAuth callback page (frontend)
+│   ├── config.ts                 # Environment configuration
+│   ├── page.tsx                  # Main page
+│   └── Provider.tsx              # App providers setup
+└── lib/
+    ├── session.ts                # Cookie-based session management
+    ├── token-store.ts            # In-memory token storage (swap for DB in production)
+    ├── pkce-store.ts             # PKCE verifier storage for OAuth
+    ├── sonar-client.ts           # SonarClient factory
+    └── sonar-route-handler.ts    # Authenticated route handler with token refresh
 ```

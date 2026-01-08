@@ -1,6 +1,6 @@
 /**
  * Temporary store for PKCE code verifiers and OAuth state tokens
- * Uses encrypted cookies to persist across serverless function invocations
+ * Uses cookies to persist across serverless function invocations
  */
 import { cookies } from "next/headers";
 
@@ -8,20 +8,20 @@ const PKCE_COOKIE_PREFIX = "sonar_pkce_";
 const PKCE_COOKIE_TTL_SEC = 10 * 60; // 10 minutes
 
 interface StateEntry {
-  userId: string;
+  sessionId: string;
   codeVerifier: string;
   expiresAt: number;
 }
 
 /**
- * Store PKCE verifier and user ID linked to a state token in a cookie
+ * Store PKCE verifier and session ID linked to a state token in a cookie
  */
-export async function setPKCEVerifier(state: string, userId: string, codeVerifier: string): Promise<void> {
+export async function setPKCEVerifier(state: string, sessionId: string, codeVerifier: string): Promise<void> {
   const cookieStore = await cookies();
   const expiresAt = Date.now() + PKCE_COOKIE_TTL_SEC * 1000;
 
   const entry: StateEntry = {
-    userId,
+    sessionId,
     codeVerifier,
     expiresAt,
   };
@@ -36,7 +36,7 @@ export async function setPKCEVerifier(state: string, userId: string, codeVerifie
 }
 
 /**
- * Get PKCE verifier and user ID for a state token from cookie
+ * Get PKCE verifier and session ID for a state token from cookie
  */
 export async function getPKCEVerifier(state: string): Promise<{ userId: string; codeVerifier: string } | null> {
   const cookieStore = await cookies();
@@ -57,11 +57,10 @@ export async function getPKCEVerifier(state: string): Promise<{ userId: string; 
     }
 
     return {
-      userId: entry.userId,
+      userId: entry.sessionId,
       codeVerifier: entry.codeVerifier,
     };
-  } catch (error) {
-    console.error("PKCEStore.getPKCEVerifier - parse error", { state, error });
+  } catch {
     cookieStore.delete(cookieName);
     return null;
   }

@@ -1,18 +1,18 @@
 import { NextResponse } from "next/server";
-import { getAuth } from "../../[...nextauth]/route";
+import { getSession } from "@/lib/session";
 import { getTokenStore } from "@/lib/token-store";
 
 /**
  * Disconnect Sonar account (remove stored tokens)
  */
 export async function POST() {
-  const session = await getAuth();
+  const session = await getSession();
 
-  if (!session?.user?.id) {
+  if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  getTokenStore().clearTokens(session.user.id);
+  getTokenStore().clearTokens(session.id);
 
   return NextResponse.json({ success: true });
 }

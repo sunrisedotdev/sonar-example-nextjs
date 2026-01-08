@@ -1,24 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { useSession } from "./use-session";
 import { EntityDetails } from "@echoxyz/sonar-core";
 import { saleUUID } from "../config";
 
 /**
  * Hook to fetch all Sonar entities for the authenticated user
- * Replaces useSonarEntities from sonar-react
  */
 export function useSonarEntities() {
-  const { data: session } = useSession();
+  const { authenticated, sonarConnected, refreshSession } = useSession();
   const [loading, setLoading] = useState(false);
   const [entities, setEntities] = useState<EntityDetails[] | undefined>(undefined);
   const [error, setError] = useState<Error | undefined>(undefined);
 
-  const sonarConnected = session?.user?.sonarConnected ?? false;
-
   useEffect(() => {
-    if (!session?.user?.id || !sonarConnected) {
+    if (!authenticated || !sonarConnected) {
       setEntities(undefined);
       setError(undefined);
       setLoading(false);
@@ -41,6 +38,11 @@ export function useSonarEntities() {
         });
 
         if (!response.ok) {
+          // If server says not connected (e.g., tokens lost after hot reload), refresh session state
+          if (response.status === 401) {
+            await refreshSession();
+            return;
+          }
           const errorData = await response.json();
           throw new Error(errorData.error || "Failed to fetch entities");
         }
@@ -56,7 +58,7 @@ export function useSonarEntities() {
     };
 
     fetchEntities();
-  }, [session?.user?.id, sonarConnected]);
+  }, [authenticated, sonarConnected, refreshSession]);
 
   return {
     loading,

@@ -1,25 +1,22 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { useSession } from "./use-session";
 import { EntityDetails } from "@echoxyz/sonar-core";
 import { saleUUID } from "../config";
 
 /**
- * Hook to fetch Sonar entity details
- * Replaces useSonarEntity from sonar-react
+ * Hook to fetch Sonar entity details for a specific wallet
  */
 export function useSonarEntity(walletAddress?: string) {
-  const { data: session } = useSession();
+  const { authenticated, sonarConnected, refreshSession } = useSession();
   const [loading, setLoading] = useState(false);
   const [entity, setEntity] = useState<EntityDetails | undefined>(undefined);
   const [error, setError] = useState<Error | undefined>(undefined);
 
-  const sonarConnected = session?.user?.sonarConnected ?? false;
-
   useEffect(() => {
     // Only fetch if user is authenticated AND connected to Sonar
-    if (!session?.user?.id || !sonarConnected || !walletAddress) {
+    if (!authenticated || !sonarConnected || !walletAddress) {
       setEntity(undefined);
       setError(undefined);
       setLoading(false);
@@ -48,6 +45,11 @@ export function useSonarEntity(walletAddress?: string) {
             setLoading(false);
             return;
           }
+          // If server says not connected (e.g., tokens lost after hot reload), refresh session state
+          if (response.status === 401) {
+            await refreshSession();
+            return;
+          }
           const errorData = await response.json();
           throw new Error(errorData.error || "Failed to fetch entity");
         }
@@ -63,7 +65,7 @@ export function useSonarEntity(walletAddress?: string) {
     };
 
     fetchEntity();
-  }, [session?.user?.id, sonarConnected, walletAddress]);
+  }, [authenticated, sonarConnected, walletAddress, refreshSession]);
 
   return {
     loading,

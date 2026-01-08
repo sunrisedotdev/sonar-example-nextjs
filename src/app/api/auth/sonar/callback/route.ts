@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuth } from "../../[...nextauth]/route";
+import { getSession } from "@/lib/session";
 import { getTokenStore, SonarTokens } from "@/lib/token-store";
 import { getPKCEVerifier, clearPKCEVerifier } from "@/lib/pkce-store";
 import { createSonarClient } from "@/lib/sonar-client";
@@ -28,13 +28,13 @@ export async function GET(request: NextRequest) {
   }
 
   // Verify session exists
-  const session = await getAuth();
-  if (!session?.user?.id) {
+  const session = await getSession();
+  if (!session) {
     return NextResponse.json({ error: "Unauthorized", details: "No active session" }, { status: 401 });
   }
 
   try {
-    // Retrieve code verifier and user ID from cookie store using state token
+    // Retrieve code verifier and session ID from cookie store using state token
     const stateData = await getPKCEVerifier(state);
     if (!stateData) {
       return NextResponse.json(
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Verify the state token belongs to the current session
-    if (stateData.userId !== session.user.id) {
+    if (stateData.userId !== session.id) {
       return NextResponse.json(
         { error: "Invalid session", details: "State token does not match current session" },
         { status: 401 }
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
     const { codeVerifier } = stateData;
 
     // Create a temporary client to exchange the authorization code
-    const client = createSonarClient(session.user.id);
+    const client = createSonarClient(session.id);
     const tokenData = await client.exchangeAuthorizationCode({
       code,
       codeVerifier,
@@ -70,14 +70,12 @@ export async function GET(request: NextRequest) {
     };
 
     // Store tokens in token store
-    getTokenStore().setTokens(session.user.id, sonarTokens);
+    getTokenStore().setTokens(session.id, sonarTokens);
 
     // Clear the code verifier (no longer needed)
     await clearPKCEVerifier(state);
 
     // Return success - frontend will navigate to home
-    // The page load will naturally trigger session refresh via NextAuth
-    // The session callback checks the token store on every request
     return NextResponse.json({ success: true });
   } catch (error) {
     // Return proper error response with status code

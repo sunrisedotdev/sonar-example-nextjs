@@ -1,26 +1,9 @@
 "use client";
 
-import { ConnectKitButton } from "connectkit";
-import { signOut, useSession } from "next-auth/react";
-import { useAccount } from "wagmi";
-import { useSIWE } from "../../hooks/use-siwe";
+import { useSession } from "@/app/hooks/use-session";
 
 export function AuthenticationSection() {
-  const { data: session } = useSession();
-  const { address } = useAccount();
-  const { signInWithEthereum } = useSIWE();
-
-  const sonarConnected = session?.user?.sonarConnected ?? false;
-  const walletConnected = !!address;
-  const appAuthenticated = !!session;
-
-  const handleSignIn = async () => {
-    try {
-      await signInWithEthereum();
-    } catch (error) {
-      console.error("Failed to sign in:", error);
-    }
-  };
+  const { authenticated, sonarConnected, loading, login, logout } = useSession();
 
   const handleConnectSonar = () => {
     window.location.href = "/api/auth/sonar/authorize";
@@ -35,27 +18,24 @@ export function AuthenticationSection() {
     }
   };
 
-  if (!walletConnected) {
+  if (loading) {
     return (
       <div className="p-6 bg-blue-50 rounded-lg border border-blue-200">
-        <div className="flex flex-col gap-3">
-          <p className="text-gray-600">Connect your wallet to continue.</p>
-          <ConnectKitButton />
-        </div>
+        <p className="text-gray-600">Loading...</p>
       </div>
     );
   }
 
-  if (!appAuthenticated) {
+  if (!authenticated) {
     return (
       <div className="p-6 bg-blue-50 rounded-lg border border-blue-200">
         <div className="flex flex-col gap-3">
-          <p className="text-gray-600">Sign in with your wallet to continue.</p>
+          <p className="text-gray-600">Login to continue.</p>
           <button
-            onClick={handleSignIn}
+            onClick={login}
             className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors w-fit"
           >
-            Sign in with Ethereum
+            Login
           </button>
         </div>
       </div>
@@ -68,8 +48,8 @@ export function AuthenticationSection() {
         <div className="flex flex-col gap-3">
           <div className="flex flex-row justify-between items-center gap-4">
             <p className="text-gray-600">Connect your Sonar account to check your eligibility status.</p>
-            <button onClick={() => signOut()} className="text-sm text-gray-500 hover:text-gray-700 underline">
-              Sign out
+            <button onClick={logout} className="text-sm text-gray-500 hover:text-gray-700 underline">
+              Logout
             </button>
           </div>
           <button
@@ -91,8 +71,8 @@ export function AuthenticationSection() {
           <button onClick={handleDisconnectSonar} className="text-sm text-gray-500 hover:text-gray-700 underline">
             Disconnect Sonar
           </button>
-          <button onClick={() => signOut()} className="text-sm text-gray-500 hover:text-gray-700 underline">
-            Sign out
+          <button onClick={logout} className="text-sm text-gray-500 hover:text-gray-700 underline">
+            Logout
           </button>
         </div>
       </div>
