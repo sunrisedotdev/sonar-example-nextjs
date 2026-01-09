@@ -30,7 +30,7 @@ export async function createSession(): Promise<Session> {
   cookieStore.set(SESSION_COOKIE_NAME, sessionId, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    sameSite: "strict",
     maxAge: SESSION_COOKIE_MAX_AGE,
     path: "/",
   });
