@@ -1,8 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { getTokenStore, SonarTokens } from "@/lib/token-store";
-import { createSonarClient } from "@/lib/sonar-client";
 import { APIError, SonarClient } from "@echoxyz/sonar-core";
+
+/**
+ * Create a SonarClient instance for a specific user
+ * Sets the access token from our server-side token store
+ */
+export function createSonarClient(userId: string): SonarClient {
+  const apiURL = process.env.NEXT_PUBLIC_ECHO_API_URL ?? "https://api.echo.xyz";
+
+  // Create a new client instance
+  const client = new SonarClient({
+    apiURL,
+    opts: {
+      onUnauthorized: () => {
+        // Clear tokens on unauthorized
+        getTokenStore().clearTokens(userId);
+      },
+    },
+  });
+
+  // Set the token from our server-side store
+  const tokens = getTokenStore().getTokens(userId);
+  if (tokens?.accessToken) {
+    client.setToken(tokens.accessToken);
+  }
+
+  return client;
+}
+
 
 // In-flight refresh promises by session ID - prevents concurrent refresh attempts
 const refreshPromises = new Map<string, Promise<SonarTokens>>();

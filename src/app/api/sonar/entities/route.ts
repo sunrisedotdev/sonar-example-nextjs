@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createSonarRouteHandler } from "@/lib/sonar-route-handler";
+import { createSonarRouteHandler } from "@/lib/sonar";
 
 type EntitiesRequest = {
   saleUUID: string;

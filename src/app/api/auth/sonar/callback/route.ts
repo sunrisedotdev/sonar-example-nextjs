@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { getTokenStore, SonarTokens } from "@/lib/token-store";
 import { getPKCEVerifier, clearPKCEVerifier } from "@/lib/pkce-store";
-import { createSonarClient } from "@/lib/sonar-client";
+import { createSonarClient } from "@/lib/sonar";
 
 /**
  * Handle OAuth callback from Sonar

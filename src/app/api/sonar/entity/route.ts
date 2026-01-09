@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createSonarRouteHandler } from "@/lib/sonar-route-handler";
+import { createSonarRouteHandler } from "@/lib/sonar";
 import { APIError } from "@echoxyz/sonar-core";
 
 type EntityRequest = {
