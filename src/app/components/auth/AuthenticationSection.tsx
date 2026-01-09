@@ -5,8 +5,16 @@ import { useSession } from "@/app/hooks/use-session";
 export function AuthenticationSection() {
   const { authenticated, sonarConnected, loading, login, logout } = useSession();
 
-  const handleConnectSonar = () => {
-    window.location.href = "/api/auth/sonar/authorize";
+  const handleConnectSonar = async () => {
+    try {
+      const response = await fetch("/api/auth/sonar/authorize");
+      const data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (error) {
+      console.error("Failed to get Sonar authorization URL:", error);
+    }
   };
 
   const handleDisconnectSonar = async () => {

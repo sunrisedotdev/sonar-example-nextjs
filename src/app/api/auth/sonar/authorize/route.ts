@@ -29,5 +29,5 @@ export async function GET() {
     frontendURL: sonarConfig.frontendURL,
   });
 
-  return NextResponse.redirect(authorizationUrl.toString());
+  return NextResponse.json({ url: authorizationUrl.toString() });
 }
