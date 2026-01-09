@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import { login as loginAction, logout as logoutAction, getSessionStatus } from "@/app/actions/auth";
 
 interface SessionState {
   authenticated: boolean;
@@ -25,8 +26,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const refreshSession = useCallback(async () => {
     try {
-      const response = await fetch("/api/auth/session");
-      const data = await response.json();
+      const data = await getSessionStatus();
       setState({
         authenticated: data.authenticated,
         sonarConnected: data.sonarConnected,
@@ -47,7 +47,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async () => {
     try {
-      await fetch("/api/auth/login", { method: "POST" });
+      await loginAction();
       await refreshSession();
     } catch (error) {
       console.error("Login failed:", error);
@@ -56,7 +56,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
-      await fetch("/api/auth/logout", { method: "POST" });
+      await logoutAction();
       await refreshSession();
     } catch (error) {
       console.error("Logout failed:", error);
