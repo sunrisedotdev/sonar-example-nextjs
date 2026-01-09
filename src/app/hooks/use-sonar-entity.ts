@@ -3,12 +3,16 @@
 import { ReadEntityResponse } from "@echoxyz/sonar-core";
 import { saleUUID } from "@/lib/config";
 import { useSonarQuery } from "./use-sonar-query";
+import { getEntity } from "@/app/actions/sonar";
 
 /**
  * Hook to fetch Sonar entity details for a specific wallet
  */
 export function useSonarEntity(walletAddress?: string) {
-  const query = useSonarQuery<ReadEntityResponse>("/api/sonar/entity", {
+  const query = useSonarQuery<
+    { saleUUID: string; walletAddress: string },
+    ReadEntityResponse
+  >(getEntity, {
     saleUUID,
     walletAddress: walletAddress ?? "",
   });

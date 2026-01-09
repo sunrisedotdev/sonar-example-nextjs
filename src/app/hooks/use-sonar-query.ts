@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "./use-session";
+import { UnauthorizedError } from "@/lib/errors";
 
 export type SonarQueryState<T> =
   | { loading: true; data: undefined; error: undefined }
@@ -10,57 +11,46 @@ export type SonarQueryState<T> =
   | { loading: false; data: undefined; error: undefined }; // idle/skipped state
 
 /**
- * Generic hook for Sonar API queries with shared session/auth handling
+ * Generic hook for Sonar server action queries with shared session/auth handling
  */
-export function useSonarQuery<T>(endpoint: string, body: Record<string, unknown>): SonarQueryState<T> {
+export function useSonarQuery<I, O>(action: (input: I) => Promise<O>, input: I): SonarQueryState<O> {
   const { authenticated, sonarConnected, refreshSession } = useSession();
-  const [state, setState] = useState<SonarQueryState<T>>({
+  const [state, setState] = useState<SonarQueryState<O>>({
     loading: true,
     data: undefined,
     error: undefined,
   });
 
-  // Serialize body for stable dependency comparison
-  const serializedBody = JSON.stringify(body);
+  // Serialize input for stable dependency comparison
+  const serializedInput = JSON.stringify(input);
 
-  useEffect(() => {
+  const fetchData = useCallback(async () => {
     if (!authenticated || !sonarConnected) {
       setState({ loading: false, data: undefined, error: undefined });
       return;
     }
 
-    const fetchData = async () => {
-      setState({ loading: true, data: undefined, error: undefined });
+    setState({ loading: true, data: undefined, error: undefined });
 
-      try {
-        const response = await fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: serializedBody,
-        });
-
-        if (!response.ok) {
-          if (response.status === 401) {
-            await refreshSession();
-            return;
-          }
-          const errorData = await response.json();
-          throw new Error(errorData.error || `Request failed: ${response.status}`);
-        }
-
-        const data = await response.json();
-        setState({ loading: false, data, error: undefined });
-      } catch (err) {
-        setState({
-          loading: false,
-          data: undefined,
-          error: err instanceof Error ? err : new Error(String(err)),
-        });
+    try {
+      const data = await action(JSON.parse(serializedInput) as I);
+      setState({ loading: false, data, error: undefined });
+    } catch (err) {
+      if (err instanceof UnauthorizedError) {
+        await refreshSession();
+        return;
       }
-    };
+      setState({
+        loading: false,
+        data: undefined,
+        error: err instanceof Error ? err : new Error(String(err)),
+      });
+    }
+  }, [authenticated, sonarConnected, action, serializedInput, refreshSession]);
 
+  useEffect(() => {
     fetchData();
-  }, [authenticated, sonarConnected, endpoint, serializedBody, refreshSession]);
+  }, [fetchData]);
 
   return state;
 }
