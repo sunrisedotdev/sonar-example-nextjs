@@ -1,14 +1,11 @@
 "use client";
 
 import { PrePurchaseFailureReason, GeneratePurchasePermitResponse, EntityID } from "@echoxyz/sonar-core";
+import { UseSonarPurchaseResultNotReadyToPurchase, UseSonarPurchaseResultReadyToPurchase } from "@echoxyz/sonar-react";
 import { useState } from "react";
-import { saleUUID } from "../../config";
-import {
-  useSonarPurchase,
-  UseSonarPurchaseResultNotReadyToPurchase,
-  UseSonarPurchaseResultReadyToPurchase,
-} from "@echoxyz/sonar-react";
-import { useSaleContract } from "../../hooks";
+import { saleUUID } from "@/lib/config";
+import { useSonarPurchase } from "../../hooks/use-sonar-purchase";
+import { useSaleContract } from "../../hooks/use-sale-contract";
 
 function readinessConfig(
   sonarPurchaser: UseSonarPurchaseResultReadyToPurchase | UseSonarPurchaseResultNotReadyToPurchase
@@ -46,7 +43,7 @@ function readinessConfig(
       );
     case PrePurchaseFailureReason.NO_RESERVED_ALLOCATION:
       return warningConfig(
-        "No reserved allocation — The connected wallet doesn’t have a reserved spot for this sale. Connect a different wallet."
+        "No reserved allocation — The connected wallet doesn't have a reserved spot for this sale. Connect a different wallet."
       );
     case PrePurchaseFailureReason.SALE_NOT_ACTIVE:
       return errorConfig("The sale is not currently active.");
@@ -84,8 +81,8 @@ function ReadyToPurchaseSection({
         // TODO: could support selecting the amount
         amount: BigInt(1e8),
       });
-    } catch (error) {
-      setError(error as Error);
+    } catch (err) {
+      setError(err as Error);
     } finally {
       setLoading(false);
     }
@@ -135,11 +132,13 @@ function PurchaseCard({ entityID, walletAddress }: { entityID: EntityID; walletA
     return <p>Loading...</p>;
   }
 
-  if (sonarPurchaser.error) {
+  if ("error" in sonarPurchaser && sonarPurchaser.error) {
     return <p>Error: {sonarPurchaser.error.message}</p>;
   }
 
-  const readinessCfg = readinessConfig(sonarPurchaser);
+  // At this point we know it's either ready or not-ready (not loading, not error)
+  const purchaser = sonarPurchaser as UseSonarPurchaseResultReadyToPurchase | UseSonarPurchaseResultNotReadyToPurchase;
+  const readinessCfg = readinessConfig(purchaser);
 
   return (
     <div className="flex flex-col gap-4 p-4 bg-linear-to-r from-indigo-50 to-blue-50 rounded-lg border border-indigo-200">
@@ -147,24 +146,23 @@ function PurchaseCard({ entityID, walletAddress }: { entityID: EntityID; walletA
         <p className={`${readinessCfg.fgCol} w-full`}>{readinessCfg.description}</p>
       </div>
 
-      {sonarPurchaser.readyToPurchase && (
+      {purchaser.readyToPurchase && (
         <ReadyToPurchaseSection
           walletAddress={walletAddress}
-          generatePurchasePermit={sonarPurchaser.generatePurchasePermit}
+          generatePurchasePermit={purchaser.generatePurchasePermit}
         />
       )}
 
-      {!sonarPurchaser.readyToPurchase &&
-        sonarPurchaser.failureReason === PrePurchaseFailureReason.REQUIRES_LIVENESS && (
-          <button
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors w-fit"
-            onClick={() => {
-              window.open(sonarPurchaser.livenessCheckURL, "_blank");
-            }}
-          >
-            <p className="text-gray-100">Complete liveness check to purchase</p>
-          </button>
-        )}
+      {!purchaser.readyToPurchase && purchaser.failureReason === PrePurchaseFailureReason.REQUIRES_LIVENESS && (
+        <button
+          className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors w-fit"
+          onClick={() => {
+            window.open(purchaser.livenessCheckURL, "_blank");
+          }}
+        >
+          <p className="text-gray-100">Complete liveness check to purchase</p>
+        </button>
+      )}
     </div>
   );
 }

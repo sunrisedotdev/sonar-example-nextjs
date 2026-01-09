@@ -1,20 +1,24 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ConnectKitButton } from "connectkit";
-import { useSonarAuth, useSonarEntity, useSonarEntities } from "@echoxyz/sonar-react";
-import { saleUUID, sonarHomeURL, sonarConfig } from "./config";
+import { saleUUID, sonarHomeURL } from "@/lib/config";
 import { useAccount } from "wagmi";
-import PurchaseCard from "./components/sale/PurchaseCard";
 import { SaleEligibility } from "@echoxyz/sonar-core";
-import { AuthenticationSection } from "./components/auth/AuthenticationSection";
 import { EntityCard } from "./components/entity/EntityCard";
 import { NotEligibleMessage } from "./components/sale/NotEligibleMessage";
+import { AuthenticationSection } from "./components/auth/AuthenticationSection";
+import { useSonarEntity } from "./hooks/use-sonar-entity";
+import { useSonarEntities } from "./hooks/use-sonar-entities";
+import { useSession } from "./hooks/use-session";
+import PurchaseCard from "./components/sale/PurchaseCard";
 import { EntitiesList } from "./components/registration/EntitiesList";
 import { EligibilityResults } from "./components/registration/EligibilityResults";
+import { ConnectKitButton } from "connectkit";
 
 export default function Home() {
   const [saleIsLive, setSaleIsLive] = useState(false);
+  const { sonarConnected } = useSession();
+  const { address } = useAccount();
 
   // Load sale state from localStorage
   useEffect(() => {
@@ -31,43 +35,26 @@ export default function Home() {
     localStorage.setItem("sale_is_live", String(newState));
   };
 
-  // Auth and data hooks
-  const { address } = useAccount();
-  const { login, authenticated, logout, ready } = useSonarAuth();
-
-  // Registration data
-  const {
-    loading: entitiesLoading,
-    entities,
-    error: entitiesError,
-  } = useSonarEntities({
-    saleUUID: saleUUID,
-  });
+  // Registration data (all entities for the user)
+  const { loading: entitiesLoading, entities, error: entitiesError } = useSonarEntities();
 
   const eligibleEntities = entities?.filter((entity) => entity.SaleEligibility === SaleEligibility.ELIGIBLE) || [];
 
-  // Sale data
-  const {
-    loading: entityLoading,
-    entity,
-    error: entityError,
-  } = useSonarEntity({
-    saleUUID: saleUUID,
-    walletAddress: address,
-  });
+  // Sale data (entity for current wallet)
+  const { loading: entityLoading, entity, error: entityError } = useSonarEntity(address);
 
   const isEligible = entity && entity.SaleEligibility === SaleEligibility.ELIGIBLE;
 
   const EntitySection = () => {
-    if (!address || !authenticated) {
+    if (!address) {
       return (
         <div className="flex flex-col gap-2 bg-yellow-50 border border-yellow-200 rounded-lg p-6 w-full">
           <p className="text-yellow-800 font-medium">Connection Required</p>
-          <p className="text-yellow-700">Connect your wallet and Sonar account to continue with your purchase.</p>
+          <p className="text-yellow-700">Connect your wallet to continue with your purchase.</p>
         </div>
       );
     }
-  
+
     if (entityLoading) {
       return (
         <div className="flex flex-col gap-2 bg-gray-50 rounded-lg p-6 w-full">
@@ -75,7 +62,7 @@ export default function Home() {
         </div>
       );
     }
-  
+
     if (entityError) {
       return (
         <div className="flex flex-col gap-2 bg-red-50 border border-red-200 rounded-lg p-6 w-full">
@@ -84,7 +71,7 @@ export default function Home() {
         </div>
       );
     }
-  
+
     if (!entity) {
       return (
         <div className="flex flex-col gap-2 bg-yellow-50 border border-yellow-200 rounded-lg p-6 w-full">
@@ -96,7 +83,7 @@ export default function Home() {
           </div>
           <div>
             <a
-              href={sonarConfig.frontendURL}
+              href={sonarHomeURL.href}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block bg-yellow-600 hover:bg-yellow-700 text-white font-medium py-2 px-6 rounded-lg transition-colors"
@@ -107,14 +94,14 @@ export default function Home() {
         </div>
       );
     }
-  
+
     return (
       <div className="flex flex-col gap-2 w-full">
         <EntityCard entity={entity} />
         <p className="text-gray-700 text-sm">
           You can switch entity by connecting a wallet that is linked to one of your other entities on{" "}
           <a
-            href={`${sonarConfig.frontendURL}/sonar/${saleUUID}`}
+            href={`${sonarHomeURL.origin}/sonar/${saleUUID}`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-blue-600 hover:text-blue-800 underline"
@@ -125,8 +112,7 @@ export default function Home() {
         </p>
       </div>
     );
-  }
-  
+  };
 
   return (
     <>
@@ -175,61 +161,51 @@ export default function Home() {
               )}
             </div>
 
-            {/* Registration Phase */}
-            {!saleIsLive && (
-              <div className="flex flex-col gap-8">
-                <AuthenticationSection ready={ready} authenticated={authenticated} login={login} logout={logout} />
+            <div className="flex flex-col gap-8">
+              <AuthenticationSection />
 
-                {authenticated && (
-                  <div className="flex flex-col gap-4">
-                    <h2 className="text-xl font-semibold text-gray-900">Check Your Eligibility</h2>
+              {/* Registration Phase */}
+              {sonarConnected && !saleIsLive && (
+                <div className="flex flex-col gap-4">
+                  <h2 className="text-xl font-semibold text-gray-900">Check Your Eligibility</h2>
 
-                    <EntitiesList
-                      loading={entitiesLoading}
-                      error={entitiesError}
+                  <EntitiesList
+                    loading={entitiesLoading}
+                    error={entitiesError}
+                    entities={entities}
+                    saleUUID={saleUUID}
+                    sonarFrontendURL={sonarHomeURL.origin}
+                  />
+
+                  {!entitiesLoading && !entitiesError && entities && (
+                    <EligibilityResults
                       entities={entities}
+                      eligibleEntities={eligibleEntities}
                       saleUUID={saleUUID}
-                      sonarFrontendURL={sonarConfig.frontendURL}
+                      sonarFrontendURL={sonarHomeURL.origin}
                     />
+                  )}
+                </div>
+              )}
 
-                    {!entitiesLoading && !entitiesError && entities && (
-                      <EligibilityResults
-                        entities={entities}
-                        eligibleEntities={eligibleEntities}
-                        saleUUID={saleUUID}
-                        sonarFrontendURL={sonarConfig.frontendURL}
-                      />
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Sale Phase */}
-            {saleIsLive && (
-              <div className="flex flex-col gap-8">
-                {/* Connection Buttons */}
-                <AuthenticationSection ready={ready} authenticated={authenticated} login={login} logout={logout} />
-
-                {/* Entity Information */}
+              {/* Sale Phase */}
+              {sonarConnected && saleIsLive && (
                 <div className="flex flex-col gap-4">
                   <h2 className="text-xl font-semibold text-gray-900">Your Entity Information</h2>
                   <ConnectKitButton />
                   <EntitySection />
+
+                  {isEligible && address && (
+                    <div className="flex flex-col gap-4">
+                      <h2 className="text-xl font-semibold text-gray-900">Make a Purchase</h2>
+                      <PurchaseCard entityID={entity.EntityID} walletAddress={address} />
+                    </div>
+                  )}
+
+                  {entity && !isEligible && <NotEligibleMessage sonarHomeURL={sonarHomeURL.href} />}
                 </div>
-
-                {/* Purchase Panel */}
-                {isEligible && address && (
-                  <div className="flex flex-col gap-4">
-                    <h2 className="text-xl font-semibold text-gray-900">Make a Purchase</h2>
-                    <PurchaseCard entityID={entity.EntityID} walletAddress={address} />
-                  </div>
-                )}
-
-                {/* Not Eligible Message */}
-                {entity && !isEligible && <NotEligibleMessage sonarHomeURL={sonarHomeURL.href} />}
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>

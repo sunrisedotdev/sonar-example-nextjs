@@ -1,102 +1,86 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useSonarAuth } from "@echoxyz/sonar-react";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
-export default function OAuthCallback() {
-  const { authenticated, completeOAuth, ready } = useSonarAuth();
-  const oauthCompletionTriggered = useRef(false);
-  const [oauthError, setOAuthError] = useState<string | null>(null);
-  const [timedOut, setTimedOut] = useState(false);
+/**
+ * OAuth callback content - uses useSearchParams which requires Suspense
+ */
+function OAuthCallbackContent() {
+  const searchParams = useSearchParams();
+  const [error, setError] = useState<string | null>(null);
 
-  // complete the oauth flow and exchange the code for an access token
   useEffect(() => {
-    const processOAuthCallback = async () => {
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get("code");
-      const state = params.get("state");
+    const handleCallback = async () => {
+      // Extract query parameters
+      const code = searchParams.get("code");
+      const state = searchParams.get("state");
+      const oauthError = searchParams.get("error");
 
-      // the user is already authenticated, nothing to do
-      if (!ready || authenticated || !code || !state) {
+      if (oauthError) {
+        setError(`OAuth error: ${oauthError}`);
         return;
       }
 
-      // ensuring the oauth completion isn't called multiple times since subsequent ones are expected to fail
-      if (oauthCompletionTriggered.current) {
+      if (!code || !state) {
+        setError("Missing authorization code or state");
         return;
       }
-      oauthCompletionTriggered.current = true;
 
       try {
-        await completeOAuth({ code, state });
-      } catch (err) {
-        setOAuthError(err instanceof Error ? err.message : null);
+        // Call backend callback handler
+        const response = await fetch(`/api/auth/sonar/callback?code=${code}&state=${state}`);
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+          setError(errorData.error || "Failed to complete OAuth flow");
+          return;
+        }
+
+        // Success - do a hard navigation to home
+        // This ensures a full page load that picks up the updated session
+        window.location.href = "/";
+      } catch {
+        setError("Failed to process OAuth callback");
       }
     };
 
-    processOAuthCallback();
-  }, [authenticated, completeOAuth, ready]);
-
-  // fetch the user's available entities after they've been authenticated
-  useEffect(() => {
-    if (!ready || !authenticated) {
-      return;
-    }
-
-    // Redirect to the stored return path, or default to home
-    const returnPath = localStorage.getItem("sonar_oauth_return_path");
-    if (returnPath) {
-      localStorage.removeItem("sonar_oauth_return_path");
-      window.location.href = returnPath;
-    } else {
-      window.location.href = "/";
-    }
-  }, [authenticated, ready]);
-
-  // set a timeout, so we don't keep the user waiting indefinitely in case of an unexpected issue
-  useEffect(() => {
-    setTimedOut(false);
-    const timeoutId = setTimeout(() => setTimedOut(true), 20000);
-    return () => clearTimeout(timeoutId);
-  }, [setTimedOut]);
-
-  if (timedOut) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold text-red-600 mb-2">Timed out</h2>
-          <button
-            onClick={() => (window.location.href = "/")}
-            className="mt-4 px-4 py-2 bg-gray-50 text-gray-900 rounded-xl cursor-pointer"
-          >
-            Return to Login
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (oauthError) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold text-red-600 mb-2">{oauthError}</h2>
-          <button
-            onClick={() => (window.location.href = "/")}
-            className="mt-4 px-4 py-2 bg-gray-50 text-gray-900 rounded-xl cursor-pointer"
-          >
-            Return to Login
-          </button>
-        </div>
-      </div>
-    );
-  }
+    handleCallback();
+  }, [searchParams]);
 
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center">
-        <h2 className="text-xl font-semibold mb-4 text-white">Connecting to Echo</h2>
+        {error ? (
+          <>
+            <h2 className="text-xl font-semibold text-red-600 mb-2">Error</h2>
+            <p className="text-gray-400 mb-4">{error}</p>
+            <p className="text-sm text-gray-500">Redirecting to home...</p>
+          </>
+        ) : (
+          <h2 className="text-xl font-semibold mb-4 text-white">Connecting to Sonar...</h2>
+        )}
       </div>
     </div>
+  );
+}
+
+/**
+ * OAuth callback page - redirects to backend callback handler
+ * Wrapped in Suspense because useSearchParams requires it for static generation
+ */
+export default function OAuthCallback() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold mb-4 text-white">Loading...</h2>
+          </div>
+        </div>
+      }
+    >
+      <OAuthCallbackContent />
+    </Suspense>
   );
 }
