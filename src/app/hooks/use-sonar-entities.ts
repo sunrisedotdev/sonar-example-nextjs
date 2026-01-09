@@ -1,7 +1,7 @@
 "use client";
 
 import { ListAvailableEntitiesResponse } from "@echoxyz/sonar-core";
-import { saleUUID } from "../config";
+import { saleUUID } from "@/lib/config";
 import { useSonarQuery } from "./use-sonar-query";
 
 /**

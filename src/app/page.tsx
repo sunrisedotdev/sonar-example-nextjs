@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { saleUUID, sonarHomeURL } from "./config";
+import { saleUUID, sonarHomeURL } from "@/lib/config";
 import { useAccount } from "wagmi";
 import { SaleEligibility } from "@echoxyz/sonar-core";
 import { EntityCard } from "./components/entity/EntityCard";

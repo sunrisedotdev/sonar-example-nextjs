@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
+import { sonarConfig } from "@/lib/config";
 import { getTokenStore, SonarTokens } from "@/lib/token-store";
 import { getPKCEVerifier, clearPKCEVerifier } from "@/lib/pkce-store";
 import { createSonarClient } from "@/lib/sonar";
@@ -58,7 +59,7 @@ export async function GET(request: NextRequest) {
     const tokenData = await client.exchangeAuthorizationCode({
       code,
       codeVerifier,
-      redirectURI: process.env.NEXT_PUBLIC_OAUTH_CLIENT_REDIRECT_URI ?? "",
+      redirectURI: sonarConfig.redirectURI,
     });
 
     const expiresAt = Math.floor(Date.now() / 1000) + tokenData.expires_in;

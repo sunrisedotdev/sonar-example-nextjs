@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { getTokenStore, SonarTokens } from "@/lib/token-store";
+import { sonarConfig } from "@/lib/config";
 import { APIError, SonarClient } from "@echoxyz/sonar-core";
 
 /**
@@ -8,11 +9,9 @@ import { APIError, SonarClient } from "@echoxyz/sonar-core";
  * Sets the access token from our server-side token store
  */
 export function createSonarClient(userId: string): SonarClient {
-  const apiURL = process.env.NEXT_PUBLIC_ECHO_API_URL ?? "https://api.echo.xyz";
-
   // Create a new client instance
   const client = new SonarClient({
-    apiURL,
+    apiURL: sonarConfig.apiURL,
     opts: {
       onUnauthorized: () => {
         // Clear tokens on unauthorized
@@ -46,8 +45,7 @@ async function refreshSonarToken(sessionId: string, refreshToken: string): Promi
   }
 
   const doRefresh = async (): Promise<SonarTokens> => {
-    const apiURL = process.env.NEXT_PUBLIC_ECHO_API_URL ?? "https://api.echo.xyz";
-    const client = new SonarClient({ apiURL });
+    const client = new SonarClient({ apiURL: sonarConfig.apiURL });
 
     const tokenData = await client.refreshToken({ refreshToken });
     const expiresAt = Math.floor(Date.now() / 1000) + tokenData.expires_in;

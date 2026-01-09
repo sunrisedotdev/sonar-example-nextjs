@@ -1,7 +1,7 @@
 import { BasicPermitV2, GeneratePurchasePermitResponse } from "@echoxyz/sonar-core";
 import { useCallback, useEffect, useState } from "react";
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { saleContract } from "../config";
+import { saleContract } from "@/lib/config";
 import { examplSaleABI } from "../ExampleSaleABI";
 import { useConfig } from "wagmi";
 import { simulateContract } from "wagmi/actions";

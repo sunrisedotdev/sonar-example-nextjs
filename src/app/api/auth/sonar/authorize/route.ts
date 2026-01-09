@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
+import { sonarConfig } from "@/lib/config";
 import { generatePKCEParams, buildAuthorizationUrl } from "@echoxyz/sonar-core";
 import { setPKCEVerifier } from "@/lib/pkce-store";
 
@@ -21,11 +22,11 @@ export async function GET() {
 
   // Build authorization URL with PKCE
   const authorizationUrl = buildAuthorizationUrl({
-    clientUUID: process.env.NEXT_PUBLIC_OAUTH_CLIENT_UUID ?? "",
-    redirectURI: process.env.NEXT_PUBLIC_OAUTH_CLIENT_REDIRECT_URI ?? "",
+    clientUUID: sonarConfig.clientUUID,
+    redirectURI: sonarConfig.redirectURI,
     state,
     codeChallenge,
-    frontendURL: process.env.NEXT_PUBLIC_ECHO_FRONTEND_URL ?? "https://app.echo.xyz",
+    frontendURL: sonarConfig.frontendURL,
   });
 
   return NextResponse.redirect(authorizationUrl.toString());

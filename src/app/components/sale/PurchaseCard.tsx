@@ -3,7 +3,7 @@
 import { PrePurchaseFailureReason, GeneratePurchasePermitResponse, EntityID } from "@echoxyz/sonar-core";
 import { UseSonarPurchaseResultNotReadyToPurchase, UseSonarPurchaseResultReadyToPurchase } from "@echoxyz/sonar-react";
 import { useState } from "react";
-import { saleUUID } from "../../config";
+import { saleUUID } from "@/lib/config";
 import { useSonarPurchase } from "../../hooks/use-sonar-purchase";
 import { useSaleContract } from "../../hooks/use-sale-contract";
 

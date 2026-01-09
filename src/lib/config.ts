@@ -1,12 +1,12 @@
 import { Hex } from "@echoxyz/sonar-core";
 import { SonarProviderConfig } from "@echoxyz/sonar-react";
 
-export const sonarConfig = {
+export const sonarConfig: SonarProviderConfig & { apiURL: string } = {
   clientUUID: process.env.NEXT_PUBLIC_OAUTH_CLIENT_UUID ?? "",
   redirectURI: process.env.NEXT_PUBLIC_OAUTH_CLIENT_REDIRECT_URI ?? "",
   frontendURL: process.env.NEXT_PUBLIC_ECHO_FRONTEND_URL ?? "https://app.echo.xyz",
   apiURL: process.env.NEXT_PUBLIC_ECHO_API_URL ?? "https://api.echo.xyz",
-} as SonarProviderConfig;
+};
 
 export const saleUUID = process.env.NEXT_PUBLIC_SALE_UUID ?? "";
 export const saleContract =
