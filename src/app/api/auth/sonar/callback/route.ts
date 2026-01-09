@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
       redirectURI: process.env.NEXT_PUBLIC_OAUTH_CLIENT_REDIRECT_URI ?? "",
     });
 
-    const expiresAt = Math.floor(Date.now() / 1000) + (tokenData.expires_in || 3600);
+    const expiresAt = Math.floor(Date.now() / 1000) + tokenData.expires_in;
 
     const sonarTokens: SonarTokens = {
       accessToken: tokenData.access_token,

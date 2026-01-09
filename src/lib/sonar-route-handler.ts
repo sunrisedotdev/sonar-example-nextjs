@@ -23,7 +23,7 @@ async function refreshSonarToken(sessionId: string, refreshToken: string): Promi
     const client = new SonarClient({ apiURL });
 
     const tokenData = await client.refreshToken({ refreshToken });
-    const expiresAt = Math.floor(Date.now() / 1000) + (tokenData.expires_in || 3600);
+    const expiresAt = Math.floor(Date.now() / 1000) + tokenData.expires_in;
 
     return {
       accessToken: tokenData.access_token,
@@ -49,17 +49,12 @@ export type AuthenticatedContext = {
   client: SonarClient;
 };
 
-type RouteHandler<T> = (
-  context: AuthenticatedContext,
-  body: T
-) => Promise<NextResponse>;
+type RouteHandler<T> = (context: AuthenticatedContext, body: T) => Promise<NextResponse>;
 
 /**
  * Creates a Sonar API route handler with authentication, token refresh, and error handling.
  */
-export function createSonarRouteHandler<T>(
-  handler: RouteHandler<T>
-): (request: NextRequest) => Promise<NextResponse> {
+export function createSonarRouteHandler<T>(handler: RouteHandler<T>): (request: NextRequest) => Promise<NextResponse> {
   return async (request: NextRequest) => {
     // Check session authentication
     const session = await getSession();
@@ -70,10 +65,7 @@ export function createSonarRouteHandler<T>(
     // Get tokens from store
     let tokens = getTokenStore().getTokens(session.id);
     if (!tokens) {
-      return NextResponse.json(
-        { error: "Sonar account not connected" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Sonar account not connected" }, { status: 401 });
     }
 
     // Check if token needs refresh (within 5 minutes of expiry)
@@ -83,10 +75,7 @@ export function createSonarRouteHandler<T>(
         tokens = await refreshSonarToken(session.id, tokens.refreshToken);
         getTokenStore().setTokens(session.id, tokens);
       } catch {
-        return NextResponse.json(
-          { error: "Failed to refresh token" },
-          { status: 401 }
-        );
+        return NextResponse.json({ error: "Failed to refresh token" }, { status: 401 });
       }
     }
 
@@ -97,17 +86,11 @@ export function createSonarRouteHandler<T>(
       return await handler({ sessionId: session.id, tokens, client }, body);
     } catch (error) {
       if (error instanceof APIError) {
-        return NextResponse.json(
-          { error: error.message },
-          { status: error.status }
-        );
+        return NextResponse.json({ error: error.message }, { status: error.status });
       }
 
       console.error("Error calling Sonar API");
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
   };
 }
