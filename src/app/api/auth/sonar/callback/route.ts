@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Verify the state token belongs to the current session
-    if (stateData.userId !== session.id) {
+    if (stateData.userId !== session.userId) {
       return NextResponse.json(
         { error: "Invalid session", details: "State token does not match current session" },
         { status: 401 }
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
     const { codeVerifier } = stateData;
 
     // Create a temporary client to exchange the authorization code
-    const client = createSonarClient(session.id);
+    const client = createSonarClient(session.userId);
     const tokenData = await client.exchangeAuthorizationCode({
       code,
       codeVerifier,
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
     };
 
     // Store tokens in token store
-    getTokenStore().setTokens(session.id, sonarTokens);
+    getTokenStore().setTokens(session.userId, sonarTokens);
 
     // Clear the code verifier (no longer needed)
     await clearPKCEVerifier(state);

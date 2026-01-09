@@ -16,8 +16,8 @@ export async function GET() {
   // Generate PKCE parameters (includes state token from sonar-core)
   const { codeVerifier, codeChallenge, state } = await generatePKCEParams();
 
-  // Store code verifier and session ID linked to state token (will be retrieved in callback)
-  await setPKCEVerifier(state, session.id, codeVerifier);
+  // Store code verifier and user ID linked to state token (will be retrieved in callback)
+  await setPKCEVerifier(state, session.userId, codeVerifier);
 
   // Build authorization URL with PKCE
   const authorizationUrl = buildAuthorizationUrl({

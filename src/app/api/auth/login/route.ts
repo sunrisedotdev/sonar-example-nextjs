@@ -10,6 +10,6 @@ export async function POST() {
 
   return NextResponse.json({
     success: true,
-    sessionId: session.id,
+    userId: session.userId,
   });
 }

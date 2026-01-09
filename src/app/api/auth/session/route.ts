@@ -16,7 +16,7 @@ export async function GET() {
     });
   }
 
-  const tokens = getTokenStore().getTokens(session.id);
+  const tokens = getTokenStore().getTokens(session.userId);
 
   return NextResponse.json({
     authenticated: true,

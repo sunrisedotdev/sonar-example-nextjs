@@ -63,7 +63,7 @@ export function createSonarRouteHandler<T>(handler: RouteHandler<T>): (request: 
     }
 
     // Get tokens from store
-    let tokens = getTokenStore().getTokens(session.id);
+    let tokens = getTokenStore().getTokens(session.userId);
     if (!tokens) {
       return NextResponse.json({ error: "Sonar account not connected" }, { status: 401 });
     }
@@ -72,8 +72,8 @@ export function createSonarRouteHandler<T>(handler: RouteHandler<T>): (request: 
     const now = Math.floor(Date.now() / 1000);
     if (tokens.expiresAt - now < 300) {
       try {
-        tokens = await refreshSonarToken(session.id, tokens.refreshToken);
-        getTokenStore().setTokens(session.id, tokens);
+        tokens = await refreshSonarToken(session.userId, tokens.refreshToken);
+        getTokenStore().setTokens(session.userId, tokens);
       } catch {
         return NextResponse.json({ error: "Failed to refresh token" }, { status: 401 });
       }
@@ -81,9 +81,9 @@ export function createSonarRouteHandler<T>(handler: RouteHandler<T>): (request: 
 
     try {
       const body = (await request.json()) as T;
-      const client = createSonarClient(session.id);
+      const client = createSonarClient(session.userId);
 
-      return await handler({ sessionId: session.id, tokens, client }, body);
+      return await handler({ sessionId: session.userId, tokens, client }, body);
     } catch (error) {
       if (error instanceof APIError) {
         return NextResponse.json({ error: error.message }, { status: error.status });

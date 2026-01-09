@@ -12,7 +12,7 @@ export async function POST() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  getTokenStore().clearTokens(session.id);
+  getTokenStore().clearTokens(session.userId);
 
   return NextResponse.json({ success: true });
 }

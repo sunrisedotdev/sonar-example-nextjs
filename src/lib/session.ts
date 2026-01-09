@@ -5,11 +5,13 @@
 import { cookies } from "next/headers";
 import { getTokenStore } from "./token-store";
 
-const SESSION_COOKIE_NAME = "session_id";
+const SESSION_COOKIE_NAME = "sonar_example_session_id";
 const SESSION_COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 
 export interface Session {
   id: string;
+  /** User identifier - in this example app, the same as the session ID */
+  userId: string;
 }
 
 export async function getSession(): Promise<Session | null> {
@@ -20,7 +22,7 @@ export async function getSession(): Promise<Session | null> {
     return null;
   }
 
-  return { id: sessionId };
+  return { id: sessionId, userId: sessionId };
 }
 
 export async function createSession(): Promise<Session> {
@@ -35,7 +37,7 @@ export async function createSession(): Promise<Session> {
     path: "/",
   });
 
-  return { id: sessionId };
+  return { id: sessionId, userId: sessionId };
 }
 
 export async function destroySession(): Promise<void> {
