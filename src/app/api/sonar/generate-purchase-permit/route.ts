@@ -11,7 +11,7 @@ type GeneratePurchasePermitRequest = {
  * Proxy request to Sonar GenerateSalePurchasePermit endpoint
  */
 export const POST = createSonarRouteHandler<GeneratePurchasePermitRequest>(
-  async ({ client }, body) => {
+  async (client, body) => {
     const { saleUUID, entityID, walletAddress } = body;
 
     if (!saleUUID || !entityID || !walletAddress) {

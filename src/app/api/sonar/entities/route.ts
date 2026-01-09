@@ -10,7 +10,7 @@ type EntitiesRequest = {
  * Returns all entities for the authenticated user
  */
 export const POST = createSonarRouteHandler<EntitiesRequest>(
-  async ({ client }, body) => {
+  async (client, body) => {
     const { saleUUID } = body;
 
     if (!saleUUID) {

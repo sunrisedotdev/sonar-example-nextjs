@@ -68,13 +68,7 @@ async function refreshSonarToken(sessionId: string, refreshToken: string): Promi
   }
 }
 
-export type AuthenticatedContext = {
-  sessionId: string;
-  tokens: SonarTokens;
-  client: SonarClient;
-};
-
-type RouteHandler<T> = (context: AuthenticatedContext, body: T) => Promise<NextResponse>;
+type RouteHandler<T> = (client: SonarClient, body: T) => Promise<NextResponse>;
 
 /**
  * Creates a Sonar API route handler with authentication, token refresh, and error handling.
@@ -108,7 +102,7 @@ export function createSonarRouteHandler<T>(handler: RouteHandler<T>): (request: 
       const body = (await request.json()) as T;
       const client = createSonarClient(session.userId);
 
-      return await handler({ sessionId: session.userId, tokens, client }, body);
+      return await handler(client, body);
     } catch (error) {
       if (error instanceof APIError) {
         return NextResponse.json({ error: error.message }, { status: error.status });

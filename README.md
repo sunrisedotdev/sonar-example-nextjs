@@ -42,37 +42,49 @@ For demonstration purposes, this example uses a minimal session system:
 The backend handles the complete OAuth flow, storing tokens securely server-side:
 
 ```
-┌─────────┐          ┌─────────┐          ┌─────────┐          ┌─────────┐
-│ Browser │          │ Next.js │          │  Echo   │          │  Sonar  │
-│         │          │ Backend │          │  OAuth  │          │   API   │
-└────┬────┘          └────┬────┘          └────┬────┘          └────┬────┘
-     │                    │                    │                    │
-     │ 1. Click "Connect" │                    │                    │
-     ├───────────────────>│                    │                    │
-     │                    │                    │                    │
-     │                    │ 2. Generate PKCE   │                    │
-     │                    │    params & store  │                    │
-     │                    │    verifier        │                    │
-     │                    │                    │                    │
-     │ 3. Redirect to Echo OAuth               │                    │
-     │<───────────────────┼───────────────────>│                    │
-     │                    │                    │                    │
-     │ 4. User authenticates                   │                    │
-     │<─────────────────────────────────-─────>│                    │
-     │                    │                    │                    │
-     │ 5. Redirect with auth code              │                    │
-     │────────────────────┼───────────────────>│                    │
-     │                    │                    │                    │
-     │                    │ 6. Exchange code   │                    │
-     │                    │    for tokens      │                    │
-     │                    │<──────────────────>│                    │
-     │                    │                    │                    │
-     │                    │ 7. Store tokens    │                    │
-     │                    │    server-side     │                    │
-     │                    │                    │                    │
-     │ 8. Success response│                    │                    │
-     │<───────────────────│                    │                    │
-     │                    │                    │                    │
+┌─────────┐                   ┌─────────┐                   ┌─────────┐
+│ Browser │                   │ Next.js │                   │  Echo   │
+│         │                   │ Backend │                   │  OAuth  │
+└────┬────┘                   └────┬────┘                   └────┬────┘
+     │                             │                             │
+     │ 1. Click "Connect"          │                             │
+     ├────────────────────────────>│                             │
+     │                             │                             │
+     │                             │ 2. Generate PKCE            │
+     │                             │    params & store           │
+     │                             │    verifier                 │
+     │                             │                             │
+     │ 3. Return redirect          │                             │
+     │    URL                      │                             │
+     │<────────────────────────────│                             │
+     │                             │                             │
+     │ 4. Navigate to Echo OAuth   │                             │
+     ├──────────────────────────────────────────────────────────>│
+     │                             │                             │
+     │ 5. User authenticates & authorizes                        │
+     │    (interactive session)    │                             │
+     │                             │                             │
+     │ 6. Redirect to callback with auth code                    │
+     │<──────────────────────────────────────────────────────────│
+     │                             │                             │
+     │ 7. Send auth code           │                             │
+     │    to backend               │                             │
+     ├────────────────────────────>│                             │
+     │                             │                             │
+     │                             │ 8. Exchange code            │
+     │                             │    for tokens               │
+     │                             ├────────────────────────────>│
+     │                             │                             │
+     │                             │ 9. Return tokens            │
+     │                             │<────────────────────────────│
+     │                             │                             │
+     │                             │ 10. Store tokens            │
+     │                             │     server-side             │
+     │                             │                             │
+     │ 11. Success                 │                             │
+     │     response                │                             │
+     │<────────────────────────────│                             │
+     │                             │                             │
 ```
 
 ### Token Refresh

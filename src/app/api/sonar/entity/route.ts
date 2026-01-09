@@ -11,7 +11,7 @@ type EntityRequest = {
  * Proxy request to Sonar ReadEntity endpoint
  */
 export const POST = createSonarRouteHandler<EntityRequest>(
-  async ({ client }, body) => {
+  async (client, body) => {
     const { saleUUID, walletAddress } = body;
 
     if (!saleUUID || !walletAddress) {

@@ -11,7 +11,7 @@ type PrePurchaseCheckRequest = {
  * Proxy request to Sonar PrePurchaseCheck endpoint
  */
 export const POST = createSonarRouteHandler<PrePurchaseCheckRequest>(
-  async ({ client }, body) => {
+  async (client, body) => {
     const { saleUUID, entityID, walletAddress } = body;
 
     if (!saleUUID || !entityID || !walletAddress) {
