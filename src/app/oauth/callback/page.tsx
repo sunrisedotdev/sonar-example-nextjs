@@ -30,18 +30,13 @@ function OAuthCallbackContent() {
 
       try {
         // Call server action to handle callback
-        const result = await handleSonarCallback(code, state);
-
-        if ("error" in result) {
-          setError(result.error || "Failed to complete OAuth flow");
-          return;
-        }
+        await handleSonarCallback(code, state);
 
         // Success - do a hard navigation to home
         // This ensures a full page load that picks up the updated session
         window.location.href = "/";
-      } catch {
-        setError("Failed to process OAuth callback");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to process OAuth callback");
       }
     };
 

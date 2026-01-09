@@ -12,28 +12,24 @@ import { SonarTokens } from "@/lib/token-store";
  * Create a new session (login).
  * Given this is an example app - no authentication is required.
  */
-export async function login() {
+export async function login(): Promise<{ userId: string }> {
   const session = await createSession();
-  return {
-    success: true,
-    userId: session.userId,
-  };
+  return { userId: session.userId };
 }
 
 /**
  * Destroy the current session (logout).
  * Clears session cookie and any associated Sonar tokens.
  */
-export async function logout() {
+export async function logout(): Promise<void> {
   await destroySession();
-  return { success: true };
 }
 
 /**
  * Get current session status.
  * Returns session info and Sonar connection status.
  */
-export async function getSessionStatus() {
+export async function getSessionStatus(): Promise<{ authenticated: boolean; sonarConnected: boolean }> {
   const session = await getSession();
 
   if (!session) {
@@ -54,11 +50,11 @@ export async function getSessionStatus() {
 /**
  * Generate Sonar OAuth authorization URL with PKCE
  */
-export async function getSonarAuthorizationUrl() {
+export async function getSonarAuthorizationUrl(): Promise<string> {
   const session = await getSession();
 
   if (!session) {
-    return { error: "Unauthorized" };
+    throw new Error("Unauthorized");
   }
 
   // Generate PKCE parameters (includes state token from sonar-core)
@@ -76,76 +72,65 @@ export async function getSonarAuthorizationUrl() {
     frontendURL: sonarConfig.frontendURL,
   });
 
-  return { url: authorizationUrl.toString() };
+  return authorizationUrl.toString();
 }
 
 /**
  * Handle OAuth callback from Sonar
  * Exchange authorization code for access/refresh tokens using PKCE
  */
-export async function handleSonarCallback(code: string, state: string) {
+export async function handleSonarCallback(code: string, state: string): Promise<void> {
   // Verify session exists
   const session = await getSession();
   if (!session) {
-    return { error: "Unauthorized", details: "No active session" };
+    throw new Error("Unauthorized: No active session");
   }
 
-  try {
-    // Retrieve code verifier and session ID from cookie store using state token
-    const stateData = getPKCEVerifier(state);
-    if (!stateData) {
-      return { error: "Invalid state", details: "OAuth state token not found or expired" };
-    }
-
-    // Verify the state token belongs to the current session
-    if (stateData.userId !== session.userId) {
-      return { error: "Invalid session", details: "State token does not match current session" };
-    }
-
-    const { codeVerifier } = stateData;
-
-    // Create a temporary client to exchange the authorization code
-    const client = createSonarClient(session.userId);
-    const tokenData = await client.exchangeAuthorizationCode({
-      code,
-      codeVerifier,
-      redirectURI: sonarConfig.redirectURI,
-    });
-
-    const expiresAt = Math.floor(Date.now() / 1000) + tokenData.expires_in;
-
-    const sonarTokens: SonarTokens = {
-      accessToken: tokenData.access_token,
-      refreshToken: tokenData.refresh_token,
-      expiresAt,
-    };
-
-    // Store tokens in token store
-    getTokenStore().setTokens(session.userId, sonarTokens);
-
-    // Clear the code verifier (no longer needed)
-    clearPKCEVerifier(state);
-
-    return { success: true };
-  } catch (error) {
-    if (error instanceof Error) {
-      return { error: "OAuth callback failed", details: error.message };
-    }
-    return { error: "OAuth callback failed" };
+  // Retrieve code verifier and session ID from cookie store using state token
+  const stateData = getPKCEVerifier(state);
+  if (!stateData) {
+    throw new Error("Invalid state: OAuth state token not found or expired");
   }
+
+  // Verify the state token belongs to the current session
+  if (stateData.userId !== session.userId) {
+    throw new Error("Invalid session: State token does not match current session");
+  }
+
+  const { codeVerifier } = stateData;
+
+  // Create a temporary client to exchange the authorization code
+  const client = createSonarClient(session.userId);
+  const tokenData = await client.exchangeAuthorizationCode({
+    code,
+    codeVerifier,
+    redirectURI: sonarConfig.redirectURI,
+  });
+
+  const expiresAt = Math.floor(Date.now() / 1000) + tokenData.expires_in;
+
+  const sonarTokens: SonarTokens = {
+    accessToken: tokenData.access_token,
+    refreshToken: tokenData.refresh_token,
+    expiresAt,
+  };
+
+  // Store tokens in token store
+  getTokenStore().setTokens(session.userId, sonarTokens);
+
+  // Clear the code verifier (no longer needed)
+  clearPKCEVerifier(state);
 }
 
 /**
  * Disconnect Sonar account (remove stored tokens)
  */
-export async function disconnectSonar() {
+export async function disconnectSonar(): Promise<void> {
   const session = await getSession();
 
   if (!session) {
-    return { error: "Unauthorized" };
+    throw new Error("Unauthorized");
   }
 
   getTokenStore().clearTokens(session.userId);
-
-  return { success: true };
 }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "./use-session";
-import { ServerActionResult } from "@/lib/sonar";
+import { UnauthorizedError } from "@/lib/errors";
 
 export type SonarQueryState<T> =
   | { loading: true; data: undefined; error: undefined }
@@ -13,12 +13,9 @@ export type SonarQueryState<T> =
 /**
  * Generic hook for Sonar server action queries with shared session/auth handling
  */
-export function useSonarQuery<TInput, TOutput>(
-  action: (input: TInput) => Promise<ServerActionResult<TOutput>>,
-  input: TInput
-): SonarQueryState<TOutput> {
+export function useSonarQuery<I, O>(action: (input: I) => Promise<O>, input: I): SonarQueryState<O> {
   const { authenticated, sonarConnected, refreshSession } = useSession();
-  const [state, setState] = useState<SonarQueryState<TOutput>>({
+  const [state, setState] = useState<SonarQueryState<O>>({
     loading: true,
     data: undefined,
     error: undefined,
@@ -36,18 +33,13 @@ export function useSonarQuery<TInput, TOutput>(
     setState({ loading: true, data: undefined, error: undefined });
 
     try {
-      const result = await action(JSON.parse(serializedInput) as TInput);
-
-      if (!result.success) {
-        if (result.unauthorized) {
-          await refreshSession();
-          return;
-        }
-        throw new Error(result.error);
-      }
-
-      setState({ loading: false, data: result.data, error: undefined });
+      const data = await action(JSON.parse(serializedInput) as I);
+      setState({ loading: false, data, error: undefined });
     } catch (err) {
+      if (err instanceof UnauthorizedError) {
+        await refreshSession();
+        return;
+      }
       setState({
         loading: false,
         data: undefined,

@@ -8,10 +8,8 @@ export function AuthenticationSection() {
 
   const handleConnectSonar = async () => {
     try {
-      const result = await getSonarAuthorizationUrl();
-      if ("url" in result && result.url) {
-        window.location.href = result.url;
-      }
+      const url = await getSonarAuthorizationUrl();
+      window.location.href = url;
     } catch (error) {
       console.error("Failed to get Sonar authorization URL:", error);
     }

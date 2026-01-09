@@ -36,17 +36,11 @@ export function useSonarPurchase(args: {
       throw new Error("Not authenticated");
     }
 
-    const result = await generatePurchasePermitAction({
+    return generatePurchasePermitAction({
       saleUUID: args.saleUUID,
       entityID: args.entityID,
       walletAddress: args.walletAddress,
     });
-
-    if (!result.success) {
-      throw new Error(result.error);
-    }
-
-    return result.data;
   }, [authenticated, args.saleUUID, args.entityID, args.walletAddress]);
 
   if (loading) {

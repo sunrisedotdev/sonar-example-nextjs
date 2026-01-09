@@ -1,7 +1,11 @@
 import { getSession } from "@/lib/session";
 import { getTokenStore, SonarTokens } from "@/lib/token-store";
 import { sonarConfig } from "@/lib/config";
-import { APIError, SonarClient } from "@echoxyz/sonar-core";
+import { SonarClient } from "@echoxyz/sonar-core";
+import { UnauthorizedError } from "@/lib/errors";
+
+// Re-export for backwards compatibility
+export { UnauthorizedError } from "@/lib/errors";
 
 /**
  * Create a SonarClient instance for a specific user
@@ -66,29 +70,24 @@ async function refreshSonarToken(sessionId: string, refreshToken: string): Promi
   }
 }
 
-export type ServerActionResult<T> =
-  | { success: true; data: T }
-  | { success: false; error: string; unauthorized?: boolean };
-
 type ServerActionHandler<I, O> = (client: SonarClient, input: I) => Promise<O>;
 
 /**
  * Creates a Sonar server action with authentication, token refresh, and error handling.
+ * Throws on errors instead of returning error objects.
  */
-export function createSonarServerAction<I, O>(
-  handler: ServerActionHandler<I, O>
-): (input: I) => Promise<ServerActionResult<O>> {
+export function createSonarServerAction<I, O>(handler: ServerActionHandler<I, O>): (input: I) => Promise<O> {
   return async (input: I) => {
     // Check session authentication
     const session = await getSession();
     if (!session) {
-      return { success: false, error: "Unauthorized", unauthorized: true };
+      throw new UnauthorizedError("Unauthorized");
     }
 
     // Get tokens from store
     let tokens = getTokenStore().getTokens(session.userId);
     if (!tokens) {
-      return { success: false, error: "Sonar account not connected", unauthorized: true };
+      throw new UnauthorizedError("Sonar account not connected");
     }
 
     // Check if token needs refresh (within 5 minutes of expiry)
@@ -98,21 +97,11 @@ export function createSonarServerAction<I, O>(
         tokens = await refreshSonarToken(session.userId, tokens.refreshToken);
         getTokenStore().setTokens(session.userId, tokens);
       } catch {
-        return { success: false, error: "Failed to refresh token", unauthorized: true };
+        throw new UnauthorizedError("Failed to refresh token");
       }
     }
 
-    try {
-      const client = createSonarClient(session.userId);
-      const data = await handler(client, input);
-      return { success: true, data };
-    } catch (error) {
-      if (error instanceof APIError) {
-        return { success: false, error: error.message };
-      }
-
-      console.error("Error calling Sonar API");
-      return { success: false, error: "Internal server error" };
-    }
+    const client = createSonarClient(session.userId);
+    return handler(client, input);
   };
 }
