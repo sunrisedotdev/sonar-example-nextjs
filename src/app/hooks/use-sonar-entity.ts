@@ -1,75 +1,29 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useSession } from "./use-session";
-import { EntityDetails } from "@echoxyz/sonar-core";
+import { ReadEntityResponse } from "@echoxyz/sonar-core";
 import { saleUUID } from "../config";
+import { useSonarQuery } from "./use-sonar-query";
 
 /**
  * Hook to fetch Sonar entity details for a specific wallet
  */
 export function useSonarEntity(walletAddress?: string) {
-  const { authenticated, sonarConnected, refreshSession } = useSession();
-  const [loading, setLoading] = useState(false);
-  const [entity, setEntity] = useState<EntityDetails | undefined>(undefined);
-  const [error, setError] = useState<Error | undefined>(undefined);
+  const query = useSonarQuery<ReadEntityResponse>("/api/sonar/entity", {
+    saleUUID,
+    walletAddress: walletAddress ?? "",
+  });
 
-  useEffect(() => {
-    // Only fetch if user is authenticated AND connected to Sonar
-    if (!authenticated || !sonarConnected || !walletAddress) {
-      setEntity(undefined);
-      setError(undefined);
-      setLoading(false);
-      return;
-    }
+  // No wallet address - return idle state
+  if (!walletAddress) {
+    return { loading: false, entity: undefined, error: undefined };
+  }
 
-    const fetchEntity = async () => {
-      setLoading(true);
-      setError(undefined);
-
-      try {
-        const response = await fetch("/api/sonar/entity", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            saleUUID,
-            walletAddress,
-          }),
-        });
-
-        if (!response.ok) {
-          if (response.status === 404) {
-            setEntity(undefined);
-            setLoading(false);
-            return;
-          }
-          // If server says not connected (e.g., tokens lost after hot reload), refresh session state
-          if (response.status === 401) {
-            await refreshSession();
-            return;
-          }
-          const errorData = await response.json();
-          throw new Error(errorData.error || "Failed to fetch entity");
-        }
-
-        const data = await response.json();
-        setEntity(data.Entity);
-      } catch (err) {
-        setError(err instanceof Error ? err : new Error(String(err)));
-        setEntity(undefined);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchEntity();
-  }, [authenticated, sonarConnected, walletAddress, refreshSession]);
+  // Treat 404 as "no entity" rather than an error
+  const is404 = query.error?.message.includes("404");
 
   return {
-    loading,
-    entity,
-    error,
+    loading: query.loading,
+    entity: query.data?.Entity,
+    error: is404 ? undefined : query.error,
   };
 }
