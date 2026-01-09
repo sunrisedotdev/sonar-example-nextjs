@@ -1,76 +1,111 @@
 /**
- * Temporary store for PKCE code verifiers and OAuth state tokens
- * Uses cookies to persist across serverless function invocations
+ * PKCE store interface for managing OAuth PKCE code verifiers.
+ * This interface allows swapping between in-memory and persistent storage implementations.
  */
-import { cookies } from "next/headers";
-
-const PKCE_COOKIE_PREFIX = "sonar_pkce_";
-const PKCE_COOKIE_TTL_SEC = 10 * 60; // 10 minutes
-
-interface StateEntry {
+export interface PKCEEntry {
   sessionId: string;
   codeVerifier: string;
-  expiresAt: number;
+  expiresAt: number; // Unix timestamp in milliseconds
+}
+
+export interface PKCEStore {
+  /**
+   * Store PKCE verifier and session ID for a state token
+   */
+  setEntry(state: string, entry: PKCEEntry): void;
+
+  /**
+   * Retrieve PKCE entry for a state token
+   */
+  getEntry(state: string): PKCEEntry | null;
+
+  /**
+   * Remove PKCE entry for a state token
+   */
+  clearEntry(state: string): void;
 }
 
 /**
- * Store PKCE verifier and session ID linked to a state token in a cookie
+ * In-memory PKCE store implementation.
+ * Entries are stored in a Map and will be lost on server restart.
+ * This can be easily swapped for a database-backed implementation.
  */
-export async function setPKCEVerifier(state: string, sessionId: string, codeVerifier: string): Promise<void> {
-  const cookieStore = await cookies();
-  const expiresAt = Date.now() + PKCE_COOKIE_TTL_SEC * 1000;
+class InMemoryPKCEStore implements PKCEStore {
+  private entries: Map<string, PKCEEntry> = new Map();
 
-  const entry: StateEntry = {
+  setEntry(state: string, entry: PKCEEntry): void {
+    this.entries.set(state, entry);
+  }
+
+  getEntry(state: string): PKCEEntry | null {
+    return this.entries.get(state) || null;
+  }
+
+  clearEntry(state: string): void {
+    this.entries.delete(state);
+  }
+}
+
+// Singleton instance - can be swapped for a different implementation
+let pkceStoreInstance: PKCEStore | null = null;
+
+/**
+ * Get the PKCE store instance.
+ * This factory function allows swapping implementations without changing call sites.
+ */
+export function getPKCEStore(): PKCEStore {
+  if (!pkceStoreInstance) {
+    pkceStoreInstance = new InMemoryPKCEStore();
+  }
+  return pkceStoreInstance;
+}
+
+/**
+ * Set a custom PKCE store implementation.
+ * Useful for swapping to a database-backed store.
+ */
+export function setPKCEStore(store: PKCEStore): void {
+  pkceStoreInstance = store;
+}
+
+const PKCE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+/**
+ * Store PKCE verifier and session ID linked to a state token
+ */
+export function setPKCEVerifier(state: string, sessionId: string, codeVerifier: string): void {
+  getPKCEStore().setEntry(state, {
     sessionId,
     codeVerifier,
-    expiresAt,
-  };
-
-  cookieStore.set(`${PKCE_COOKIE_PREFIX}${state}`, JSON.stringify(entry), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: PKCE_COOKIE_TTL_SEC,
-    path: "/",
+    expiresAt: Date.now() + PKCE_TTL_MS,
   });
 }
 
 /**
- * Get PKCE verifier and session ID for a state token from cookie
+ * Get PKCE verifier and session ID for a state token
  */
-export async function getPKCEVerifier(state: string): Promise<{ userId: string; codeVerifier: string } | null> {
-  const cookieStore = await cookies();
-  const cookieName = `${PKCE_COOKIE_PREFIX}${state}`;
-  const cookie = cookieStore.get(cookieName);
+export function getPKCEVerifier(state: string): { userId: string; codeVerifier: string } | null {
+  const entry = getPKCEStore().getEntry(state);
 
-  if (!cookie?.value) {
+  if (!entry) {
     return null;
   }
 
-  try {
-    const entry: StateEntry = JSON.parse(cookie.value);
-
-    // Check if expired
-    if (entry.expiresAt < Date.now()) {
-      cookieStore.delete(cookieName);
-      return null;
-    }
-
-    return {
-      userId: entry.sessionId,
-      codeVerifier: entry.codeVerifier,
-    };
-  } catch {
-    cookieStore.delete(cookieName);
+  // Check if expired
+  if (entry.expiresAt < Date.now()) {
+    getPKCEStore().clearEntry(state);
     return null;
   }
+
+  return {
+    userId: entry.sessionId,
+    codeVerifier: entry.codeVerifier,
+  };
 }
 
 /**
  * Clear state entry (called after successful token exchange)
  */
-export async function clearPKCEVerifier(state: string): Promise<void> {
-  const cookieStore = await cookies();
-  const cookieName = `${PKCE_COOKIE_PREFIX}${state}`;
-  cookieStore.delete(cookieName);
+export function clearPKCEVerifier(state: string): void {
+  getPKCEStore().clearEntry(state);
 }
