@@ -19,13 +19,11 @@ function OAuthCallbackContent() {
 
       if (oauthError) {
         setError(`OAuth error: ${oauthError}`);
-        setTimeout(() => (window.location.href = "/"), 3000);
         return;
       }
 
       if (!code || !state) {
         setError("Missing authorization code or state");
-        setTimeout(() => (window.location.href = "/"), 3000);
         return;
       }
 
@@ -36,7 +34,6 @@ function OAuthCallbackContent() {
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
           setError(errorData.error || "Failed to complete OAuth flow");
-          setTimeout(() => (window.location.href = "/"), 3000);
           return;
         }
 
@@ -45,7 +42,6 @@ function OAuthCallbackContent() {
         window.location.href = "/";
       } catch {
         setError("Failed to process OAuth callback");
-        setTimeout(() => (window.location.href = "/"), 3000);
       }
     };
 
