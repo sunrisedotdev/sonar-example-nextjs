@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { handleSonarCallback } from "@/app/actions/auth";
 
 /**
  * OAuth callback content - uses useSearchParams which requires Suspense
@@ -11,7 +12,7 @@ function OAuthCallbackContent() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const handleCallback = async () => {
+    const processCallback = async () => {
       // Extract query parameters
       const code = searchParams.get("code");
       const state = searchParams.get("state");
@@ -28,24 +29,18 @@ function OAuthCallbackContent() {
       }
 
       try {
-        // Call backend callback handler
-        const response = await fetch(`/api/auth/sonar/callback?code=${code}&state=${state}`);
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
-          setError(errorData.error || "Failed to complete OAuth flow");
-          return;
-        }
+        // Call server action to handle callback
+        await handleSonarCallback(code, state);
 
         // Success - do a hard navigation to home
         // This ensures a full page load that picks up the updated session
         window.location.href = "/";
-      } catch {
-        setError("Failed to process OAuth callback");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to process OAuth callback");
       }
     };
 
-    handleCallback();
+    processCallback();
   }, [searchParams]);
 
   return (

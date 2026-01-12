@@ -1,17 +1,15 @@
 "use client";
 
 import { useSession } from "@/app/hooks/use-session";
+import { getSonarAuthorizationUrl, disconnectSonar } from "@/app/actions/auth";
 
 export function AuthenticationSection() {
   const { authenticated, sonarConnected, loading, login, logout } = useSession();
 
   const handleConnectSonar = async () => {
     try {
-      const response = await fetch("/api/auth/sonar/authorize");
-      const data = await response.json();
-      if (data.url) {
-        window.location.href = data.url;
-      }
+      const url = await getSonarAuthorizationUrl();
+      window.location.href = url;
     } catch (error) {
       console.error("Failed to get Sonar authorization URL:", error);
     }
@@ -19,7 +17,7 @@ export function AuthenticationSection() {
 
   const handleDisconnectSonar = async () => {
     try {
-      await fetch("/api/auth/sonar/disconnect", { method: "POST" });
+      await disconnectSonar();
       window.location.reload();
     } catch (error) {
       console.error("Failed to disconnect Sonar:", error);

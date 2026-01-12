@@ -10,6 +10,7 @@ import { UseSonarPurchaseResult } from "@echoxyz/sonar-react";
 import { useSession } from "./use-session";
 import { useCallback } from "react";
 import { useSonarQuery } from "./use-sonar-query";
+import { prePurchaseCheck, generatePurchasePermit as generatePurchasePermitAction } from "@/app/actions/sonar";
 
 /**
  * Hook for Sonar purchase flow
@@ -21,7 +22,10 @@ export function useSonarPurchase(args: {
 }): UseSonarPurchaseResult {
   const { authenticated } = useSession();
 
-  const { loading, data, error } = useSonarQuery<PrePurchaseCheckResponse>("/api/sonar/pre-purchase-check", {
+  const { loading, data, error } = useSonarQuery<
+    { saleUUID: string; entityID: string; walletAddress: string },
+    PrePurchaseCheckResponse
+  >(prePurchaseCheck, {
     saleUUID: args.saleUUID,
     entityID: args.entityID,
     walletAddress: args.walletAddress,
@@ -32,22 +36,11 @@ export function useSonarPurchase(args: {
       throw new Error("Not authenticated");
     }
 
-    const response = await fetch("/api/sonar/generate-purchase-permit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        saleUUID: args.saleUUID,
-        entityID: args.entityID,
-        walletAddress: args.walletAddress,
-      }),
+    return generatePurchasePermitAction({
+      saleUUID: args.saleUUID,
+      entityID: args.entityID,
+      walletAddress: args.walletAddress,
     });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || `Request failed: ${response.status}`);
-    }
-
-    return response.json();
   }, [authenticated, args.saleUUID, args.entityID, args.walletAddress]);
 
   if (loading) {
