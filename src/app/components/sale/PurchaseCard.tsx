@@ -39,11 +39,11 @@ function readinessConfig(
       return warningConfig("The connected wallet is not eligible for this sale. Connect a different wallet.");
     case PrePurchaseFailureReason.MAX_WALLETS_USED:
       return warningConfig(
-        "Maximum number of wallets reached — This entity can’t use the connected wallet. Use a previous wallet."
+        "Maximum number of wallets reached — This entity can't use the connected wallet. Use a previous wallet."
       );
-    case PrePurchaseFailureReason.NO_RESERVED_ALLOCATION:
+    case PrePurchaseFailureReason.WALLET_NOT_LINKED:
       return warningConfig(
-        "No reserved allocation — The connected wallet doesn't have a reserved spot for this sale. Connect a different wallet."
+        "Wallet not linked — The connected wallet is not linked to your entity. Please link it first."
       );
     case PrePurchaseFailureReason.SALE_NOT_ACTIVE:
       return errorConfig("The sale is not currently active.");
