@@ -3,14 +3,14 @@
 import { WagmiProvider, createConfig, http } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ConnectKitProvider, getDefaultConfig } from "connectkit";
-import { sepolia } from "wagmi/chains";
+import { baseSepolia } from "wagmi/chains";
 import { SessionProvider } from "./hooks/use-session";
 
 const config = createConfig(
   getDefaultConfig({
-    chains: [sepolia],
+    chains: [baseSepolia],
     transports: {
-      [sepolia.id]: http(),
+      [baseSepolia.id]: http(),
     },
 
     // Required API Keys

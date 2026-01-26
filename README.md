@@ -22,6 +22,15 @@ pnpm i
 pnpm dev
 ```
 
+The example uses a [SettlementSale](https://github.com/sunrisedotdev/sonar/blob/main/contracts/src/SettlementSale.sol) contract on Base Sepolia.
+
+In order to test committing funds, you will need to have USDC to commit and ETH to pay for the gas.
+
+Faucets:
+
+- USDC: <https://faucet.circle.com/>
+- ETH: <https://docs.base.org/base-chain/tools/network-faucets>
+
 ## What This Example Demonstrates
 
 - **OAuth authentication with Sonar** via a secure backend flow with PKCE
