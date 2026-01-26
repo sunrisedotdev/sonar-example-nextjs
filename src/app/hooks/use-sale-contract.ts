@@ -1,4 +1,4 @@
-import { BasicPermitV2, GeneratePurchasePermitResponse } from "@echoxyz/sonar-core";
+import { BasicPermitV3, GeneratePurchasePermitResponse } from "@echoxyz/sonar-core";
 import { useCallback, useEffect, useState } from "react";
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { saleContract } from "@/lib/config";
@@ -22,10 +22,10 @@ export const useSaleContract = (walletAddress: `0x${string}`) => {
 
   const commitWithPermit = useCallback(
     async ({ purchasePermitResp, amount }: { purchasePermitResp: GeneratePurchasePermitResponse; amount: bigint }) => {
-      if (!("MinAmount" in purchasePermitResp.PermitJSON)) {
-        throw new Error("Invalid purchase permit response");
+      if (!("OpensAt" in purchasePermitResp.PermitJSON)) {
+        throw new Error("Invalid purchase permit response - expected V3 permit");
       }
-      const permit = purchasePermitResp.PermitJSON as BasicPermitV2;
+      const permit = purchasePermitResp.PermitJSON as BasicPermitV3;
 
       const { request } = await simulateContract(config, {
         address: saleContract,
@@ -34,7 +34,7 @@ export const useSaleContract = (walletAddress: `0x${string}`) => {
         args: [
           amount,
           {
-            entityID: permit.SaleSpecificEntityID,
+            saleSpecificEntityID: permit.SaleSpecificEntityID,
             saleUUID: permit.SaleUUID,
             wallet: permit.Wallet,
             expiresAt: BigInt(permit.ExpiresAt),
@@ -42,6 +42,8 @@ export const useSaleContract = (walletAddress: `0x${string}`) => {
             maxAmount: BigInt(permit.MaxAmount),
             minPrice: BigInt(permit.MinPrice),
             maxPrice: BigInt(permit.MaxPrice),
+            opensAt: BigInt(permit.OpensAt),
+            closesAt: BigInt(permit.ClosesAt),
             payload: permit.Payload,
           },
           purchasePermitResp.Signature,

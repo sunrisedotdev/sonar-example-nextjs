@@ -1,603 +1,343 @@
 export const examplSaleABI = [
   {
+    type: "constructor",
     inputs: [
       {
-        components: [
-          {
-            internalType: "bytes16",
-            name: "saleUUID",
-            type: "bytes16",
-          },
-          {
-            internalType: "address",
-            name: "purchasePermitSigner",
-            type: "address",
-          },
-        ],
-        internalType: "struct ExampleSale.Init",
         name: "init",
         type: "tuple",
+        internalType: "struct ExampleSale.Init",
+        components: [
+          { name: "saleUUID", type: "bytes16", internalType: "bytes16" },
+          { name: "purchasePermitSigner", type: "address", internalType: "address" },
+        ],
       },
     ],
     stateMutability: "nonpayable",
-    type: "constructor",
   },
   {
-    inputs: [],
-    name: "AccessControlBadConfirmation",
-    type: "error",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "account",
-        type: "address",
-      },
-      {
-        internalType: "bytes32",
-        name: "neededRole",
-        type: "bytes32",
-      },
-    ],
-    name: "AccessControlUnauthorizedAccount",
-    type: "error",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "addr",
-        type: "address",
-      },
-      {
-        internalType: "bytes16",
-        name: "got",
-        type: "bytes16",
-      },
-      {
-        internalType: "bytes16",
-        name: "existing",
-        type: "bytes16",
-      },
-    ],
-    name: "AddressTiedToAnotherEntity",
-    type: "error",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "minAmount",
-        type: "uint256",
-      },
-    ],
-    name: "AmountBelowMinimum",
-    type: "error",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "maxAmount",
-        type: "uint256",
-      },
-    ],
-    name: "AmountExceedsMaximum",
-    type: "error",
-  },
-  {
-    inputs: [],
-    name: "ECDSAInvalidSignature",
-    type: "error",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "length",
-        type: "uint256",
-      },
-    ],
-    name: "ECDSAInvalidSignatureLength",
-    type: "error",
-  },
-  {
-    inputs: [
-      {
-        internalType: "bytes32",
-        name: "s",
-        type: "bytes32",
-      },
-    ],
-    name: "ECDSAInvalidSignatureS",
-    type: "error",
-  },
-  {
-    inputs: [],
-    name: "PurchasePermitExpired",
-    type: "error",
-  },
-  {
-    inputs: [
-      {
-        internalType: "bytes16",
-        name: "got",
-        type: "bytes16",
-      },
-      {
-        internalType: "bytes16",
-        name: "want",
-        type: "bytes16",
-      },
-    ],
-    name: "PurchasePermitSaleUUIDMismatch",
-    type: "error",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "got",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "want",
-        type: "address",
-      },
-    ],
-    name: "PurchasePermitSenderMismatch",
-    type: "error",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "signer",
-        type: "address",
-      },
-    ],
-    name: "PurchasePermitUnauthorizedSigner",
-    type: "error",
-  },
-  {
-    inputs: [],
-    name: "ZeroAddress",
-    type: "error",
-  },
-  {
-    inputs: [],
-    name: "ZeroEntityID",
-    type: "error",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "wallet",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "bytes16",
-        name: "entityID",
-        type: "bytes16",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "totalAmount",
-        type: "uint256",
-      },
-    ],
-    name: "Purchased",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "bytes32",
-        name: "role",
-        type: "bytes32",
-      },
-      {
-        indexed: true,
-        internalType: "bytes32",
-        name: "previousAdminRole",
-        type: "bytes32",
-      },
-      {
-        indexed: true,
-        internalType: "bytes32",
-        name: "newAdminRole",
-        type: "bytes32",
-      },
-    ],
-    name: "RoleAdminChanged",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "bytes32",
-        name: "role",
-        type: "bytes32",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "account",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "sender",
-        type: "address",
-      },
-    ],
-    name: "RoleGranted",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "bytes32",
-        name: "role",
-        type: "bytes32",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "account",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "sender",
-        type: "address",
-      },
-    ],
-    name: "RoleRevoked",
-    type: "event",
-  },
-  {
-    inputs: [],
+    type: "function",
     name: "DEFAULT_ADMIN_ROLE",
-    outputs: [
-      {
-        internalType: "bytes32",
-        name: "",
-        type: "bytes32",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
     inputs: [],
+    outputs: [{ name: "", type: "bytes32", internalType: "bytes32" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "MAX_ADDRESSES_PER_ENTITY",
+    inputs: [],
+    outputs: [{ name: "", type: "uint8", internalType: "uint8" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
     name: "PURCHASE_PERMIT_SIGNER_ROLE",
-    outputs: [
-      {
-        internalType: "bytes32",
-        name: "",
-        type: "bytes32",
-      },
-    ],
+    inputs: [],
+    outputs: [{ name: "", type: "bytes32", internalType: "bytes32" }],
     stateMutability: "view",
-    type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
+    type: "function",
     name: "amountByAddress",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
+    inputs: [{ name: "", type: "address", internalType: "address" }],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
     stateMutability: "view",
-    type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
+    type: "function",
+    name: "amountByEntity",
+    inputs: [{ name: "", type: "bytes16", internalType: "bytes16" }],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "entityByAddress",
+    inputs: [{ name: "addr", type: "address", internalType: "address" }],
+    outputs: [{ name: "", type: "bytes16", internalType: "bytes16" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
     name: "entityIDByAddress",
+    inputs: [{ name: "", type: "address", internalType: "address" }],
+    outputs: [{ name: "", type: "bytes16", internalType: "bytes16" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getEntityAddressCount",
+    inputs: [{ name: "entityID", type: "bytes16", internalType: "bytes16" }],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getEntityAddresses",
+    inputs: [{ name: "entityID", type: "bytes16", internalType: "bytes16" }],
+    outputs: [{ name: "", type: "address[]", internalType: "address[]" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getEntityPurchaseBreakdown",
+    inputs: [{ name: "entityID", type: "bytes16", internalType: "bytes16" }],
     outputs: [
       {
-        internalType: "bytes16",
-        name: "",
-        type: "bytes16",
+        name: "purchases",
+        type: "tuple[]",
+        internalType: "struct ExampleSale.AddressPurchase[]",
+        components: [
+          { name: "addr", type: "address", internalType: "address" },
+          { name: "amount", type: "uint256", internalType: "uint256" },
+        ],
       },
     ],
     stateMutability: "view",
-    type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "bytes32",
-        name: "role",
-        type: "bytes32",
-      },
-    ],
+    type: "function",
     name: "getRoleAdmin",
-    outputs: [
-      {
-        internalType: "bytes32",
-        name: "",
-        type: "bytes32",
-      },
-    ],
+    inputs: [{ name: "role", type: "bytes32", internalType: "bytes32" }],
+    outputs: [{ name: "", type: "bytes32", internalType: "bytes32" }],
     stateMutability: "view",
-    type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "bytes32",
-        name: "role",
-        type: "bytes32",
-      },
-      {
-        internalType: "uint256",
-        name: "index",
-        type: "uint256",
-      },
-    ],
+    type: "function",
     name: "getRoleMember",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
+    inputs: [
+      { name: "role", type: "bytes32", internalType: "bytes32" },
+      { name: "index", type: "uint256", internalType: "uint256" },
     ],
+    outputs: [{ name: "", type: "address", internalType: "address" }],
     stateMutability: "view",
-    type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "bytes32",
-        name: "role",
-        type: "bytes32",
-      },
-    ],
+    type: "function",
     name: "getRoleMemberCount",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
+    inputs: [{ name: "role", type: "bytes32", internalType: "bytes32" }],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
     stateMutability: "view",
-    type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "bytes32",
-        name: "role",
-        type: "bytes32",
-      },
-      {
-        internalType: "address",
-        name: "account",
-        type: "address",
-      },
-    ],
+    type: "function",
     name: "grantRole",
+    inputs: [
+      { name: "role", type: "bytes32", internalType: "bytes32" },
+      { name: "account", type: "address", internalType: "address" },
+    ],
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "bytes32",
-        name: "role",
-        type: "bytes32",
-      },
-      {
-        internalType: "address",
-        name: "account",
-        type: "address",
-      },
-    ],
+    type: "function",
     name: "hasRole",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
+    inputs: [
+      { name: "role", type: "bytes32", internalType: "bytes32" },
+      { name: "account", type: "address", internalType: "address" },
     ],
+    outputs: [{ name: "", type: "bool", internalType: "bool" }],
     stateMutability: "view",
-    type: "function",
   },
   {
+    type: "function",
+    name: "purchase",
     inputs: [
+      { name: "amount", type: "uint256", internalType: "uint256" },
       {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-      {
-        components: [
-          {
-            internalType: "bytes16",
-            name: "entityID",
-            type: "bytes16",
-          },
-          {
-            internalType: "bytes16",
-            name: "saleUUID",
-            type: "bytes16",
-          },
-          {
-            internalType: "address",
-            name: "wallet",
-            type: "address",
-          },
-          {
-            internalType: "uint64",
-            name: "expiresAt",
-            type: "uint64",
-          },
-          {
-            internalType: "uint256",
-            name: "minAmount",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "maxAmount",
-            type: "uint256",
-          },
-          {
-            internalType: "uint64",
-            name: "minPrice",
-            type: "uint64",
-          },
-          {
-            internalType: "uint64",
-            name: "maxPrice",
-            type: "uint64",
-          },
-          {
-            internalType: "bytes",
-            name: "payload",
-            type: "bytes",
-          },
-        ],
-        internalType: "struct PurchasePermitV2",
         name: "purchasePermit",
         type: "tuple",
+        internalType: "struct PurchasePermitV3",
+        components: [
+          { name: "saleSpecificEntityID", type: "bytes16", internalType: "bytes16" },
+          { name: "saleUUID", type: "bytes16", internalType: "bytes16" },
+          { name: "wallet", type: "address", internalType: "address" },
+          { name: "expiresAt", type: "uint64", internalType: "uint64" },
+          { name: "minAmount", type: "uint256", internalType: "uint256" },
+          { name: "maxAmount", type: "uint256", internalType: "uint256" },
+          { name: "minPrice", type: "uint64", internalType: "uint64" },
+          { name: "maxPrice", type: "uint64", internalType: "uint64" },
+          { name: "opensAt", type: "uint64", internalType: "uint64" },
+          { name: "closesAt", type: "uint64", internalType: "uint64" },
+          { name: "payload", type: "bytes", internalType: "bytes" },
+        ],
       },
-      {
-        internalType: "bytes",
-        name: "purchasePermitSignature",
-        type: "bytes",
-      },
+      { name: "purchasePermitSignature", type: "bytes", internalType: "bytes" },
     ],
-    name: "purchase",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "bytes32",
-        name: "role",
-        type: "bytes32",
-      },
-      {
-        internalType: "address",
-        name: "callerConfirmation",
-        type: "address",
-      },
-    ],
+    type: "function",
     name: "renounceRole",
+    inputs: [
+      { name: "role", type: "bytes32", internalType: "bytes32" },
+      { name: "callerConfirmation", type: "address", internalType: "address" },
+    ],
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
   },
   {
-    inputs: [],
+    type: "function",
     name: "reset",
+    inputs: [{ name: "entityID", type: "bytes16", internalType: "bytes16" }],
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "bytes32",
-        name: "role",
-        type: "bytes32",
-      },
-      {
-        internalType: "address",
-        name: "account",
-        type: "address",
-      },
-    ],
+    type: "function",
     name: "revokeRole",
+    inputs: [
+      { name: "role", type: "bytes32", internalType: "bytes32" },
+      { name: "account", type: "address", internalType: "address" },
+    ],
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
   },
   {
-    inputs: [],
+    type: "function",
     name: "saleUUID",
-    outputs: [
-      {
-        internalType: "bytes16",
-        name: "",
-        type: "bytes16",
-      },
-    ],
+    inputs: [],
+    outputs: [{ name: "", type: "bytes16", internalType: "bytes16" }],
     stateMutability: "view",
-    type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "bytes4",
-        name: "interfaceId",
-        type: "bytes4",
-      },
-    ],
-    name: "supportsInterface",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
-    stateMutability: "view",
     type: "function",
+    name: "supportsInterface",
+    inputs: [{ name: "interfaceId", type: "bytes4", internalType: "bytes4" }],
+    outputs: [{ name: "", type: "bool", internalType: "bool" }],
+    stateMutability: "view",
   },
+  {
+    type: "event",
+    name: "EntityReset",
+    inputs: [{ name: "entityID", type: "bytes16", indexed: true, internalType: "bytes16" }],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "Purchased",
+    inputs: [
+      { name: "addr", type: "address", indexed: true, internalType: "address" },
+      { name: "entityID", type: "bytes16", indexed: true, internalType: "bytes16" },
+      { name: "amount", type: "uint256", indexed: false, internalType: "uint256" },
+      { name: "totalAmount", type: "uint256", indexed: false, internalType: "uint256" },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "RoleAdminChanged",
+    inputs: [
+      { name: "role", type: "bytes32", indexed: true, internalType: "bytes32" },
+      { name: "previousAdminRole", type: "bytes32", indexed: true, internalType: "bytes32" },
+      { name: "newAdminRole", type: "bytes32", indexed: true, internalType: "bytes32" },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "RoleGranted",
+    inputs: [
+      { name: "role", type: "bytes32", indexed: true, internalType: "bytes32" },
+      { name: "account", type: "address", indexed: true, internalType: "address" },
+      { name: "sender", type: "address", indexed: true, internalType: "address" },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "RoleRevoked",
+    inputs: [
+      { name: "role", type: "bytes32", indexed: true, internalType: "bytes32" },
+      { name: "account", type: "address", indexed: true, internalType: "address" },
+      { name: "sender", type: "address", indexed: true, internalType: "address" },
+    ],
+    anonymous: false,
+  },
+  { type: "error", name: "AccessControlBadConfirmation", inputs: [] },
+  {
+    type: "error",
+    name: "AccessControlUnauthorizedAccount",
+    inputs: [
+      { name: "account", type: "address", internalType: "address" },
+      { name: "neededRole", type: "bytes32", internalType: "bytes32" },
+    ],
+  },
+  {
+    type: "error",
+    name: "AddressTiedToAnotherEntity",
+    inputs: [
+      { name: "addr", type: "address", internalType: "address" },
+      { name: "got", type: "bytes16", internalType: "bytes16" },
+      { name: "existing", type: "bytes16", internalType: "bytes16" },
+    ],
+  },
+  {
+    type: "error",
+    name: "AmountBelowMinimum",
+    inputs: [
+      { name: "amount", type: "uint256", internalType: "uint256" },
+      { name: "minAmount", type: "uint256", internalType: "uint256" },
+    ],
+  },
+  {
+    type: "error",
+    name: "AmountExceedsMaximum",
+    inputs: [
+      { name: "amount", type: "uint256", internalType: "uint256" },
+      { name: "maxAmount", type: "uint256", internalType: "uint256" },
+    ],
+  },
+  { type: "error", name: "ECDSAInvalidSignature", inputs: [] },
+  {
+    type: "error",
+    name: "ECDSAInvalidSignatureLength",
+    inputs: [{ name: "length", type: "uint256", internalType: "uint256" }],
+  },
+  {
+    type: "error",
+    name: "ECDSAInvalidSignatureS",
+    inputs: [{ name: "s", type: "bytes32", internalType: "bytes32" }],
+  },
+  {
+    type: "error",
+    name: "PurchaseOutsideAllowedWindow",
+    inputs: [
+      { name: "opensAt", type: "uint64", internalType: "uint64" },
+      { name: "closesAt", type: "uint64", internalType: "uint64" },
+      { name: "currentTime", type: "uint256", internalType: "uint256" },
+    ],
+  },
+  { type: "error", name: "PurchasePermitExpired", inputs: [] },
+  {
+    type: "error",
+    name: "PurchasePermitSaleUUIDMismatch",
+    inputs: [
+      { name: "got", type: "bytes16", internalType: "bytes16" },
+      { name: "want", type: "bytes16", internalType: "bytes16" },
+    ],
+  },
+  {
+    type: "error",
+    name: "PurchasePermitSenderMismatch",
+    inputs: [
+      { name: "got", type: "address", internalType: "address" },
+      { name: "want", type: "address", internalType: "address" },
+    ],
+  },
+  {
+    type: "error",
+    name: "PurchasePermitUnauthorizedSigner",
+    inputs: [{ name: "signer", type: "address", internalType: "address" }],
+  },
+  {
+    type: "error",
+    name: "TooManyAddressesForEntity",
+    inputs: [
+      { name: "entityID", type: "bytes16", internalType: "bytes16" },
+      { name: "max", type: "uint256", internalType: "uint256" },
+    ],
+  },
+  { type: "error", name: "ZeroAddress", inputs: [] },
+  { type: "error", name: "ZeroEntityID", inputs: [] },
 ] as const;
