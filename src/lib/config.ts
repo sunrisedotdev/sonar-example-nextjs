@@ -12,5 +12,5 @@ export const saleUUID = process.env.NEXT_PUBLIC_SALE_UUID ?? "";
 export const saleContract =
   (process.env.NEXT_PUBLIC_SALE_CONTRACT_ADDRESS as Hex) ?? "0x0000000000000000000000000000000000000000";
 export const paymentTokenAddress =
-  (process.env.NEXT_PUBLIC_PAYMENT_TOKEN_ADDRESS as `0x${string}`) ?? "0x0000000000000000000000000000000000000000";
+  (process.env.NEXT_PUBLIC_PAYMENT_TOKEN_ADDRESS as Hex) ?? "0x0000000000000000000000000000000000000000";
 export const sonarHomeURL = new URL(`/sonar/${saleUUID}/home`, sonarConfig.frontendURL);

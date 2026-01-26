@@ -198,7 +198,11 @@ export default function Home() {
                   {isEligible && address && (
                     <div className="flex flex-col gap-4">
                       <h2 className="text-xl font-semibold text-gray-900">Commit funds</h2>
-                      <CommitCard entityID={entity.SaleSpecificEntityID} walletAddress={address} />
+                      <CommitCard
+                        entityID={entity.EntityID}
+                        saleSpecificEntityID={entity.SaleSpecificEntityID}
+                        walletAddress={address}
+                      />
                     </div>
                   )}
 

@@ -1,4 +1,4 @@
-import { BasicPermitV3, EntityID, GeneratePurchasePermitResponse, Hex } from "@echoxyz/sonar-core";
+import { BasicPermitV3, GeneratePurchasePermitResponse, Hex } from "@echoxyz/sonar-core";
 import { useCallback, useState } from "react";
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { saleContract } from "@/lib/config";
@@ -7,7 +7,7 @@ import { ERC20Abi } from "../abi/ERC20";
 import { useConfig } from "wagmi";
 import { waitForTransactionReceipt, simulateContract } from "wagmi/actions";
 
-export const useSaleContract = (entityID: EntityID) => {
+export const useSaleContract = (saleSpecificEntityID: Hex) => {
   const { writeContractAsync } = useWriteContract();
   const config = useConfig();
 
@@ -84,7 +84,7 @@ export const useSaleContract = (entityID: EntityID) => {
     address: saleContract,
     abi: settlementSaleAbi,
     functionName: "entityStateByID",
-    args: [entityID as Hex],
+    args: [saleSpecificEntityID],
     query: {
       refetchInterval: 3000,
     },
