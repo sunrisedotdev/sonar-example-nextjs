@@ -1,12 +1,13 @@
-import { BasicPermitV3, GeneratePurchasePermitResponse } from "@echoxyz/sonar-core";
-import { useCallback, useEffect, useState } from "react";
+import { BasicPermitV3, GeneratePurchasePermitResponse, Hex } from "@echoxyz/sonar-core";
+import { useCallback, useState } from "react";
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { saleContract } from "@/lib/config";
-import { examplSaleABI } from "../ExampleSaleABI";
+import { settlementSaleAbi } from "../abi/SettlementSale";
+import { ERC20Abi } from "../abi/ERC20";
 import { useConfig } from "wagmi";
-import { simulateContract } from "wagmi/actions";
+import { waitForTransactionReceipt, simulateContract } from "wagmi/actions";
 
-export const useSaleContract = (walletAddress: `0x${string}`) => {
+export const useSaleContract = (saleSpecificEntityID: Hex) => {
   const { writeContractAsync } = useWriteContract();
   const config = useConfig();
 
@@ -21,70 +22,80 @@ export const useSaleContract = (walletAddress: `0x${string}`) => {
   });
 
   const commitWithPermit = useCallback(
-    async ({ purchasePermitResp, amount }: { purchasePermitResp: GeneratePurchasePermitResponse; amount: bigint }) => {
+    async ({
+      purchasePermitResp,
+      token,
+      amount,
+    }: {
+      purchasePermitResp: GeneratePurchasePermitResponse;
+      token: `0x${string}`;
+      amount: bigint;
+    }) => {
       if (!("OpensAt" in purchasePermitResp.PermitJSON)) {
-        throw new Error("Invalid purchase permit response - expected V3 permit");
+        throw new Error("Invalid purchase permit response");
       }
       const permit = purchasePermitResp.PermitJSON as BasicPermitV3;
 
-      const { request } = await simulateContract(config, {
-        address: saleContract,
-        abi: examplSaleABI,
-        functionName: "purchase",
-        args: [
-          amount,
-          {
-            saleSpecificEntityID: permit.SaleSpecificEntityID,
-            saleUUID: permit.SaleUUID,
-            wallet: permit.Wallet,
-            expiresAt: BigInt(permit.ExpiresAt),
-            minAmount: BigInt(permit.MinAmount),
-            maxAmount: BigInt(permit.MaxAmount),
-            minPrice: BigInt(permit.MinPrice),
-            maxPrice: BigInt(permit.MaxPrice),
-            opensAt: BigInt(permit.OpensAt),
-            closesAt: BigInt(permit.ClosesAt),
-            payload: permit.Payload,
-          },
-          purchasePermitResp.Signature,
-        ] as const,
+      const { request: approveRequest } = await simulateContract(config, {
+        address: token,
+        abi: ERC20Abi,
+        functionName: "approve",
+        args: [saleContract, amount],
       });
 
-      setTxHash(
-        await writeContractAsync(request, {
-          onError: (error: Error) => {
-            throw error;
-          },
-        })
-      );
+      const approveHash = await writeContractAsync(approveRequest);
+      await waitForTransactionReceipt(config, { hash: approveHash });
+
+      const bidArgs = [
+        token,
+        { lockup: false, price: BigInt(0), amount: amount },
+        {
+          saleSpecificEntityID: permit.SaleSpecificEntityID,
+          saleUUID: permit.SaleUUID,
+          wallet: permit.Wallet,
+          expiresAt: BigInt(permit.ExpiresAt),
+          minAmount: BigInt(permit.MinAmount),
+          maxAmount: BigInt(permit.MaxAmount),
+          minPrice: BigInt(permit.MinPrice),
+          maxPrice: BigInt(permit.MaxPrice),
+          opensAt: BigInt(permit.OpensAt),
+          closesAt: BigInt(permit.ClosesAt),
+          payload: permit.Payload,
+        },
+        purchasePermitResp.Signature,
+      ] as const;
+
+      // TODO could also show an example of using the replaceBidWithPermit function instead of the replaceBidWithApproval function
+      const { request: bidRequest } = await simulateContract(config, {
+        address: saleContract,
+        abi: settlementSaleAbi,
+        functionName: "replaceBidWithApproval",
+        args: bidArgs,
+      });
+
+      const bidHash = await writeContractAsync(bidRequest);
+
+      setTxHash(bidHash);
     },
     [writeContractAsync, config]
   );
 
-  const {
-    data: amountInContract,
-    refetch: refetchAmountInContract,
-    error: amountInContractError,
-  } = useReadContract({
+  const { data: entityState, error: entityStateError } = useReadContract({
     address: saleContract,
-    abi: examplSaleABI,
-    functionName: "amountByAddress",
-    args: [walletAddress],
+    abi: settlementSaleAbi,
+    functionName: "entityStateByID",
+    args: [saleSpecificEntityID],
+    query: {
+      refetchInterval: 3000,
+    },
   });
 
-  useEffect(() => {
-    if (txReceipt?.status === "success") {
-      refetchAmountInContract();
-    }
-  }, [txReceipt?.status, refetchAmountInContract]);
-
   return {
-    amountInContract,
-    amountInContractError,
+    entityState,
+    entityStateError,
     commitWithPermit,
     awaitingTxReceipt,
     txReceipt,
     awaitingTxReceiptError,
   };
 };
-
