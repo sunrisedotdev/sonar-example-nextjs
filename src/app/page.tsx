@@ -14,6 +14,7 @@ import CommitCard from "./components/sale/CommitCard";
 import { EntitiesList } from "./components/registration/EntitiesList";
 import { EligibilityResults } from "./components/registration/EligibilityResults";
 import { ConnectKitButton } from "connectkit";
+import { CommitmentDataCard } from "./components/sale/CommitmentDataCard";
 
 export default function Home() {
   const [saleIsLive, setSaleIsLive] = useState(false);
@@ -189,24 +190,33 @@ export default function Home() {
               )}
 
               {/* Sale Phase */}
-              {sonarConnected && saleIsLive && (
+              {saleIsLive && (
                 <div className="flex flex-col gap-4">
-                  <h2 className="text-xl font-semibold text-gray-900">Your Entity Information</h2>
-                  <ConnectKitButton />
-                  <EntitySection />
-
-                  {isEligible && address && (
+                  {sonarConnected && (
                     <div className="flex flex-col gap-4">
-                      <h2 className="text-xl font-semibold text-gray-900">Commit funds</h2>
-                      <CommitCard
-                        entityID={entity.EntityID}
-                        saleSpecificEntityID={entity.SaleSpecificEntityID}
-                        walletAddress={address}
-                      />
+                      <h2 className="text-xl font-semibold text-gray-900">Your Entity Information</h2>
+                      <ConnectKitButton />
+                      <EntitySection />
+
+                      {isEligible && address && (
+                        <div className="flex flex-col gap-4">
+                          <h2 className="text-xl font-semibold text-gray-900">Commit funds</h2>
+                          <CommitCard
+                            entityID={entity.EntityID}
+                            saleSpecificEntityID={entity.SaleSpecificEntityID}
+                            walletAddress={address}
+                          />
+                        </div>
+                      )}
+
+                      {entity && !isEligible && <NotEligibleMessage sonarHomeURL={sonarHomeURL.href} />}
                     </div>
                   )}
 
-                  {entity && !isEligible && <NotEligibleMessage sonarHomeURL={sonarHomeURL.href} />}
+                  <div className="flex flex-col gap-4">
+                    <h2 className="text-xl font-semibold text-gray-900">Sale Commitment Data</h2>
+                    <CommitmentDataCard saleUUID={saleUUID} />
+                  </div>
                 </div>
               )}
             </div>
