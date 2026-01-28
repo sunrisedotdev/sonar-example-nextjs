@@ -1,7 +1,7 @@
 import { getSession } from "@/lib/session";
 import { getTokenStore, SonarTokens } from "@/lib/token-store";
 import { sonarConfig } from "@/lib/config";
-import { SonarClient } from "@echoxyz/sonar-core";
+import { createClient, SonarClient } from "@echoxyz/sonar-core";
 import { UnauthorizedError } from "@/lib/errors";
 
 // Re-export for backwards compatibility
@@ -13,13 +13,11 @@ export { UnauthorizedError } from "@/lib/errors";
  */
 export function createSonarClient(userId: string): SonarClient {
   // Create a new client instance
-  const client = new SonarClient({
+  const client = createClient({
     apiURL: sonarConfig.apiURL,
-    opts: {
-      onUnauthorized: () => {
-        // Clear tokens on unauthorized
-        getTokenStore().clearTokens(userId);
-      },
+    onUnauthorized: () => {
+      // Clear tokens on unauthorized
+      getTokenStore().clearTokens(userId);
     },
   });
 
@@ -47,7 +45,7 @@ async function refreshSonarToken(sessionId: string, refreshToken: string): Promi
   }
 
   const doRefresh = async (): Promise<SonarTokens> => {
-    const client = new SonarClient({ apiURL: sonarConfig.apiURL });
+    const client = createClient({ apiURL: sonarConfig.apiURL });
 
     const tokenData = await client.refreshToken({ refreshToken });
     const expiresAt = Math.floor(Date.now() / 1000) + tokenData.expires_in;
