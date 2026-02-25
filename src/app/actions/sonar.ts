@@ -3,10 +3,8 @@
 import { createSonarServerAction } from "@/lib/sonar";
 import {
   ListAvailableEntitiesResponse,
-  ReadEntityResponse,
   PrePurchaseCheckResponse,
   GeneratePurchasePermitResponse,
-  APIError,
 } from "@echoxyz/sonar-core";
 
 type ListAvailableEntitiesInput = { saleUUID: string };
