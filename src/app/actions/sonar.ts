@@ -23,29 +23,6 @@ export const getEntities = createSonarServerAction<ListAvailableEntitiesInput, L
   }
 );
 
-type ReadEntityInput = { saleUUID: string; walletAddress: string };
-
-/**
- * Fetch a specific entity by wallet address
- */
-export const getEntity = createSonarServerAction<ReadEntityInput, ReadEntityResponse>(
-  async (client, { saleUUID, walletAddress }) => {
-    if (!saleUUID || !walletAddress) {
-      throw new Error("Missing saleUUID or walletAddress");
-    }
-
-    try {
-      return await client.readEntity({ saleUUID, walletAddress });
-    } catch (error) {
-      // Special handling: 404 returns null entity instead of error
-      if (error instanceof APIError && error.status === 404) {
-        return { Entity: null } as unknown as ReadEntityResponse;
-      }
-      throw error;
-    }
-  }
-);
-
 type PrePurchaseCheckInput = { saleUUID: string; entityID: string; walletAddress: string };
 
 /**
