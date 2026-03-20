@@ -77,21 +77,21 @@ export const useSaleContract = (saleSpecificEntityID: Hex) => {
 
       setTxHash(bidHash);
     },
-    [writeContractAsync, config]
+    [writeContractAsync, config],
   );
 
-  const { data: entityState, error: entityStateError } = useReadContract({
+  const { data: entityStates, error: entityStateError } = useReadContract({
     address: saleContract,
     abi: settlementSaleAbi,
-    functionName: "entityStateByID",
-    args: [saleSpecificEntityID],
+    functionName: "entityStatesByIDs",
+    args: [[saleSpecificEntityID]],
     query: {
       refetchInterval: 3000,
     },
   });
 
   return {
-    entityState,
+    entityState: entityStates?.[0],
     entityStateError,
     commitWithPermit,
     awaitingTxReceipt,
