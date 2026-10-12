@@ -3,8 +3,8 @@ import { useCallback, useState } from "react";
 import { useAccount, useReadContract, useSwitchChain, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { baseSepolia } from "wagmi/chains";
 import { saleContract, paymentTokenAddress } from "@/lib/config";
-import { settlementSaleAbi } from "../abi/SettlementSale";
-import { ERC20Abi } from "../abi/ERC20";
+import { settlementSaleAbi } from "@/abi/SettlementSale";
+import { ERC20Abi } from "@/abi/ERC20";
 import { useConfig } from "wagmi";
 import { waitForTransactionReceipt, simulateContract } from "wagmi/actions";
 
@@ -75,6 +75,11 @@ export const useSaleContract = (saleSpecificEntityID: Hex) => {
       ] as const;
 
       // TODO could also show an example of using the replaceBidWithPermit function instead of the replaceBidWithApproval function
+      // If this simulation intermittently reverts with "ERC20: transfer amount exceeds allowance",
+      // the configured RPC is load-balanced across nodes that haven't all synced the approval block
+      // above (the public sepolia.base.org default has this behavior). The on-chain transaction
+      // itself is unaffected. Set NEXT_PUBLIC_BASE_RPC_URL to a dedicated, non-load-balanced
+      // endpoint (see .env.example) to fix.
       const { request: bidRequest } = await simulateContract(config, {
         address: saleContract,
         abi: settlementSaleAbi,
@@ -88,6 +93,20 @@ export const useSaleContract = (saleSpecificEntityID: Hex) => {
     },
     [writeContractAsync, config, chainId, switchChainAsync],
   );
+
+  const cancelBid = useCallback(async () => {
+    if (chainId !== baseSepolia.id) {
+      await switchChainAsync({ chainId: baseSepolia.id });
+    }
+    const { request } = await simulateContract(config, {
+      address: saleContract,
+      abi: settlementSaleAbi,
+      functionName: "cancelBid",
+      args: [],
+    });
+    const hash = await writeContractAsync(request);
+    setTxHash(hash);
+  }, [writeContractAsync, config, chainId, switchChainAsync]);
 
   const { data: entityStates, error: entityStateError } = useReadContract({
     address: saleContract,
@@ -111,18 +130,31 @@ export const useSaleContract = (saleSpecificEntityID: Hex) => {
   });
 
   const isEntityStateLoaded = entityStates !== undefined;
-  const currentTotalRaw: bigint = entityStates?.[0]?.currentBid?.amount ?? 0n;
+  const entityState = entityStates?.[0];
+  const currentTotalRaw: bigint = entityState?.currentBid?.amount ?? 0n;
   const currentTotalReadableStr = (Number(currentTotalRaw) / 1e6).toLocaleString(undefined, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
 
+  const { data: contractStage } = useReadContract({
+    address: saleContract,
+    abi: settlementSaleAbi,
+    functionName: "stage",
+    query: {
+      refetchInterval: 3000,
+    },
+  });
+
   return {
     entityStateError,
     isEntityStateLoaded,
+    entityState,
     currentTotalRaw,
     currentTotalReadableStr,
     commitWithPermit,
+    cancelBid,
+    contractStage,
     awaitingTxReceipt,
     txReceipt,
     awaitingTxReceiptError,
